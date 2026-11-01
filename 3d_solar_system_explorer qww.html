@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>3D Solar System Explorer</title>
+  <style>
+    /* ==========================================================================
+       CSS VARIABLES & RESET (Pure Standalone CSS - No External Dependencies)
+       ========================================================================== */
+    :root {
+      --bg-deep: #040711;
+      --panel-bg: rgba(11, 17, 34, 0.84);
+      --panel-border: rgba(125, 162, 255, 0.22);
+      --panel-highlight: rgba(96, 165, 250, 0.16);
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-strong: #0284c7;
+      --accent-glow: rgba(56, 189, 248, 0.45);
+      --amber: #fbbf24;
+      --radius-lg: 16px;
+      --radius-md: 11px;
+      --radius-sm: 8px;
+      --shadow-lg: 0 18px 42px rgba(0, 0, 0, 0.65);
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--bg-deep);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* ==========================================================================
+       STARFIELD BACKDROP & INTERACTIVE 3D VIEWPORT
+       ========================================================================== */
+    #starfield {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .viewport {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: 1;
+      cursor: grab;
+      touch-action: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .viewport.dragging {
+      cursor: grabbing;
+    }
+
+    /* CSS 3D Perspective Container */
+    .scene {
+      width: 0;
+      height: 0;
+      position: relative;
+      perspective: 1150px;
+      transform-style: preserve-3d;
+    }
+
+    /* Main 3D Root - Important: NO opacity/filter/overflow on preserve-3d nodes */
+    .solar-system {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 0;
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
+
+    /* ==========================================================================
+       ORBITAL PATH RINGS (Lying in the 3D Ecliptic X-Y Plane)
+       ========================================================================== */
+    .orbit-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(148, 184, 255, 0.18);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .orbit-ring.selected {
+      border-color: rgba(56, 189, 248, 0.78);
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.28), inset 0 0 14px rgba(56, 189, 248, 0.18);
+    }
+
+    /* ==========================================================================
+       CELESTIAL BODIES, BILLBOARDS & SHADING
+       ========================================================================== */
+    .body-carrier {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 0;
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
+
+    /* Billboard counter-rotates against camera yaw & pitch so spheres stay round */
+    .billboard {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 0;
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
+
+    /* Generous interactive hit area for smooth clicking/tapping on moving planets */
+    .planet-hit {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+      background: transparent;
+    }
+
+    /* Visual Sphere */
+    .planet-sphere {
+      position: relative;
+      border-radius: 50%;
+      pointer-events: none;
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.25s ease;
+    }
+
+    .planet-hit:hover .planet-sphere {
+      transform: scale(1.16);
+    }
+
+    /* Dynamic directional night-side shadow rotated opposite the Sun */
+    .planet-shadow {
+      position: absolute;
+      inset: -1px;
+      border-radius: 50%;
+      pointer-events: none;
+      background: linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0) 18%,
+        rgba(2, 5, 18, 0.45) 56%,
+        rgba(1, 3, 12, 0.86) 88%
+      );
+      will-change: transform, opacity;
+    }
+
+    /* Specular spherical highlight for 3D depth */
+    .planet-gloss {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      pointer-events: none;
+      background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0) 48%);
+    }
+
+    /* Selection Reticle Ring around active body */
+    .selection-reticle {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      border-radius: 50%;
+      border: 2px dashed var(--accent);
+      box-shadow: 0 0 14px var(--accent-glow);
+      transform: translate(-50%, -50%) scale(0.75);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s ease, transform 0.22s ease;
+    }
+
+    .body-carrier.is-selected .selection-reticle {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+      animation: spinReticle 9s linear infinite;
+    }
+
+    @keyframes spinReticle {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to   { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    /* Floating Planet Name Tag in 3D Scene */
+    .planet-label {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      color: #e2e8f0;
+      background: rgba(8, 13, 28, 0.78);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      pointer-events: auto;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+    }
+
+    .planet-hit:hover + .planet-label,
+    .planet-label:hover,
+    .body-carrier.is-selected .planet-label {
+      color: #ffffff;
+      background: rgba(2, 132, 199, 0.88);
+      border-color: var(--accent);
+    }
+
+    .labels-hidden .planet-label {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .labels-hidden .body-carrier.is-selected .planet-label {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* ==========================================================================
+       UNIQUE PLANETARY SURFACE ARTWORK (Pure CSS Gradients & 3D Rings)
+       ========================================================================== */
+    /* The Sun */
+    .surface-sun {
+      background:
+        radial-gradient(circle at 35% 35%, #fffef2 0%, #fde047 26%, #f59e0b 64%, #ea580c 92%, #b91c1c 100%);
+      box-shadow:
+        0 0 28px 8px rgba(251, 191, 36, 0.75),
+        0 0 68px 22px rgba(245, 158, 11, 0.42),
+        0 0 120px 42px rgba(234, 88, 12, 0.22);
+      animation: pulseSun 4s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulseSun {
+      0% {
+        box-shadow:
+          0 0 26px 8px rgba(251, 191, 36, 0.72),
+          0 0 62px 20px rgba(245, 158, 11, 0.38),
+          0 0 110px 38px rgba(234, 88, 12, 0.2);
+      }
+      100% {
+        box-shadow:
+          0 0 34px 11px rgba(253, 224, 71, 0.85),
+          0 0 78px 26px rgba(245, 158, 11, 0.48),
+          0 0 135px 46px rgba(234, 88, 12, 0.28);
+      }
+    }
+
+    /* Mercury: Cratered warm grey-slate */
+    .surface-mercury {
+      background:
+        radial-gradient(circle at 65% 35%, rgba(71, 85, 105, 0.65) 0%, transparent 24%),
+        radial-gradient(circle at 32% 68%, rgba(51, 65, 85, 0.55) 0%, transparent 20%),
+        radial-gradient(circle at 38% 35%, #e2e8f0 0%, #94a3b8 48%, #64748b 82%, #475569 100%);
+    }
+
+    /* Venus: Dense golden-cream sulfuric clouds */
+    .surface-venus {
+      background:
+        linear-gradient(155deg, rgba(254, 243, 199, 0.45) 0%, rgba(217, 119, 6, 0.32) 45%, rgba(253, 230, 138, 0.35) 75%, transparent 100%),
+        radial-gradient(circle at 36% 32%, #fef3c7 0%, #fcd34d 38%, #d97706 78%, #92400e 100%);
+    }
+
+    /* Earth: Oceans, green continents, polar ice & clouds */
+    .surface-earth {
+      background:
+        radial-gradient(ellipse at 50% 8%, rgba(255, 255, 255, 0.85) 0%, transparent 24%),
+        radial-gradient(circle at 36% 42%, rgba(34, 197, 94, 0.88) 0%, rgba(21, 128, 61, 0.78) 19%, transparent 24%),
+        radial-gradient(circle at 68% 54%, rgba(74, 222, 128, 0.8) 0%, rgba(22, 163, 74, 0.75) 16%, transparent 22%),
+        radial-gradient(ellipse at 48% 50%, rgba(255, 255, 255, 0.35) 0%, transparent 36%),
+        radial-gradient(circle at 35% 35%, #38bdf8 0%, #0284c7 45%, #1d4ed8 80%, #172554 100%);
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.45);
+    }
+
+    /* Mars: Rusty iron-oxide desert + ice cap + dark Syrtis Major */
+    .surface-mars {
+      background:
+        radial-gradient(ellipse at 50% 6%, rgba(255, 250, 245, 0.82) 0%, transparent 20%),
+        radial-gradient(circle at 58% 52%, rgba(124, 45, 18, 0.65) 0%, transparent 28%),
+        radial-gradient(circle at 35% 34%, #fdba74 0%, #ea580c 44%, #c2410c 78%, #7c2d12 100%);
+    }
+
+    /* Jupiter: Banded gas giant with Great Red Spot */
+    .surface-jupiter {
+      background:
+        radial-gradient(ellipse 22% 14% at 62% 62%, #dc2626 0%, #b91c1c 62%, transparent 72%),
+        linear-gradient(
+          180deg,
+          #9a7b5c 0%,
+          #f3e8d2 14%,
+          #c98a55 27%,
+          #fef3c7 39%,
+          #b46939 52%,
+          #fde68a 64%,
+          #9a5833 76%,
+          #e7d5b8 88%,
+          #785c44 100%
+        );
+    }
+
+    /* Saturn: Pale butterscotch-gold bands */
+    .surface-saturn {
+      background:
+        linear-gradient(
+          180deg,
+          #bfa77a 0%,
+          #fef08a 18%,
+          #eab308 36%,
+          #fef9c3 52%,
+          #ca8a04 68%,
+          #fde047 84%,
+          #a16207 100%
+        );
+    }
+
+    /* Uranus: Smooth cyan-aquamarine ice giant */
+    .surface-uranus {
+      background:
+        linear-gradient(165deg, rgba(255, 255, 255, 0.28) 0%, transparent 48%),
+        radial-gradient(circle at 36% 34%, #cffafe 0%, #67e8f9 42%, #06b6d4 78%, #0e7490 100%);
+      box-shadow: 0 0 8px rgba(103, 232, 249, 0.3);
+    }
+
+    /* Neptune: Deep cobalt-azure ice giant with storm band */
+    .surface-neptune {
+      background:
+        radial-gradient(ellipse 24% 12% at 42% 58%, rgba(30, 58, 138, 0.85) 0%, transparent 70%),
+        linear-gradient(180deg, rgba(147, 197, 253, 0.22) 28%, transparent 36%, rgba(96, 165, 250, 0.25) 68%, transparent 76%),
+        radial-gradient(circle at 35% 32%, #60a5fa 0%, #2563eb 44%, #1d4ed8 76%, #1e1b4b 100%);
+      box-shadow: 0 0 9px rgba(59, 130, 246, 0.4);
+    }
+
+    /* True 3D Planetary Rings (Oriented in 3D Orbital Space, Intersecting Billboard Sphere) */
+    .planetary-ring-3d {
+      position: absolute;
+      top: 0;
+      left: 0;
+      border-radius: 50%;
+      pointer-events: none;
+      backface-visibility: visible;
+    }
+
+    .ring-saturn {
+      transform: translate(-50%, -50%) rotateX(18deg) rotateY(24deg);
+      background: radial-gradient(
+        circle,
+        transparent 0%,
+        transparent 37%,
+        rgba(214, 190, 142, 0.42) 39%,
+        rgba(250, 232, 180, 0.88) 47%,
+        rgba(234, 198, 128, 0.82) 54%,
+        rgba(20, 24, 38, 0.22) 56.5%, /* Cassini Division */
+        rgba(238, 212, 158, 0.78) 59%,
+        rgba(198, 168, 114, 0.52) 67%,
+        transparent 71%
+      );
+    }
+
+    .ring-uranus {
+      transform: translate(-50%, -50%) rotateX(78deg) rotateY(15deg);
+      background: radial-gradient(
+        circle,
+        transparent 0%,
+        transparent 54%,
+        rgba(165, 243, 252, 0.42) 58%,
+        rgba(103, 232, 249, 0.22) 63%,
+        transparent 67%
+      );
+    }
+
+    /* ==========================================================================
+       UI OVERLAYS: HEADER, PLANET INFO PANEL & CONTROL DOCK
+       ========================================================================== */
+    .hud-header {
+      position: fixed;
+      top: 14px;
+      left: 16px;
+      z-index: 10;
+      max-width: calc(100vw - 32px);
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .brand-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      box-shadow: var(--shadow-lg);
+      pointer-events: auto;
+      display: inline-flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .brand-title {
+      font-size: 1.08rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #fef08a 10%, #f59e0b 75%);
+      box-shadow: 0 0 10px #fbbf24;
+      flex-shrink: 0;
+    }
+
+    .brand-hint {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+    }
+
+    .scale-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(245, 158, 11, 0.13);
+      border: 1px solid rgba(251, 191, 36, 0.35);
+      color: #fde68a;
+      font-size: 0.73rem;
+      padding: 5px 10px;
+      border-radius: 999px;
+      width: fit-content;
+      pointer-events: auto;
+    }
+
+    /* Educational Planet Information Panel */
+    .info-panel {
+      position: fixed;
+      top: 14px;
+      right: 16px;
+      width: 325px;
+      max-height: calc(100vh - 112px);
+      overflow-y: auto;
+      z-index: 12;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: transform 0.28s ease, opacity 0.28s ease;
+    }
+
+    .info-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .info-identity {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    /* Mini planet preview badge inside the info panel */
+    .preview-badge {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      position: relative;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+    }
+
+    .preview-sphere {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .preview-ring {
+      position: absolute;
+      width: 44px;
+      height: 14px;
+      border-radius: 50%;
+      border: 3px solid rgba(250, 224, 150, 0.8);
+      transform: rotate(-18deg);
+      display: none;
+      pointer-events: none;
+    }
+
+    .info-titles {
+      min-width: 0;
+    }
+
+    .info-name {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.15;
+    }
+
+    .info-type {
+      display: inline-block;
+      margin-top: 3px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      background: var(--panel-highlight);
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+
+    .panel-collapse-btn {
+      display: none;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      color: var(--text-main);
+      border-radius: var(--radius-sm);
+      padding: 5px 9px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .info-body {
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .stat-box {
+      background: rgba(15, 23, 42, 0.72);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: var(--radius-sm);
+      padding: 9px 10px;
+    }
+
+    .stat-box.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .stat-label {
+      font-size: 0.69rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+    }
+
+    .stat-value {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #f8fafc;
+      line-height: 1.3;
+    }
+
+    .fact-card {
+      background: linear-gradient(145deg, rgba(14, 116, 144, 0.2), rgba(15, 23, 42, 0.75));
+      border: 1px solid rgba(56, 189, 248, 0.28);
+      border-radius: var(--radius-md);
+      padding: 11px 12px;
+    }
+
+    .fact-heading {
+      font-size: 0.73rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      margin-bottom: 5px;
+    }
+
+    .fact-text {
+      font-size: 0.84rem;
+      line-height: 1.48;
+      color: #e2e8f0;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    .disclaimer-note {
+      font-size: 0.72rem;
+      line-height: 1.4;
+      color: #cbd5e1;
+      background: rgba(251, 191, 36, 0.08);
+      border-left: 3px solid var(--amber);
+      padding: 7px 9px;
+      border-radius: 0 6px 6px 0;
+    }
+
+    /* ==========================================================================
+       BOTTOM INTERACTIVE CONTROLS BAR
+       ========================================================================== */
+    .controls-dock {
+      position: fixed;
+      bottom: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 15;
+      width: max-content;
+      max-width: calc(100vw - 24px);
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius-lg);
+      padding: 9px 14px;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 10px 14px;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .control-divider {
+      width: 1px;
+      height: 24px;
+      background: rgba(148, 163, 184, 0.22);
+    }
+
+    .ctrl-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* Planet Dropdown */
+    .planet-select {
+      appearance: none;
+      -webkit-appearance: none;
+      background-color: rgba(15, 23, 42, 0.92);
+      color: var(--text-main);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      border-radius: var(--radius-sm);
+      padding: 7px 28px 7px 10px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      background-image: linear-gradient(45deg, transparent 50%, var(--accent) 50%),
+                        linear-gradient(135deg, var(--accent) 50%, transparent 50%);
+      background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
+      background-size: 5px 5px, 5px 5px;
+      background-repeat: no-repeat;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .planet-select:hover,
+    .planet-select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.22);
+    }
+
+    /* Interactive Buttons */
+    .btn {
+      background: rgba(30, 41, 59, 0.88);
+      color: var(--text-main);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      border-radius: var(--radius-sm);
+      padding: 7px 11px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: background 0.18s ease, border-color 0.18s ease, transform 0.1s ease, color 0.18s ease;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      background: rgba(51, 65, 85, 0.95);
+      border-color: rgba(148, 163, 184, 0.55);
+    }
+
+    .btn:active {
+      transform: scale(0.96);
+    }
+
+    .btn.active {
+      background: var(--accent-strong);
+      border-color: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+    }
+
+    .btn-icon {
+      min-width: 34px;
+      padding: 7px 9px;
+      font-size: 0.98rem;
+      line-height: 1;
+    }
+
+    .readout-pill {
+      min-width: 44px;
+      text-align: center;
+      font-size: 0.78rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--accent);
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.24);
+      padding: 5px 7px;
+      border-radius: 6px;
+    }
+
+    /* Orbit Speed Range Slider */
+    .speed-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 105px;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(51, 65, 85, 0.95);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .speed-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid #ffffff;
+      box-shadow: 0 0 8px var(--accent-glow);
+      cursor: pointer;
+    }
+
+    .speed-slider::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid #ffffff;
+      box-shadow: 0 0 8px var(--accent-glow);
+      cursor: pointer;
+    }
+
+    /* ==========================================================================
+       RESPONSIVE DESIGN FOR TABLET & MOBILE SCREENS
+       ========================================================================== */
+    @media (max-width: 900px) {
+      .hud-header {
+        top: 10px;
+        left: 10px;
+        max-width: calc(100vw - 20px);
+      }
+
+      .brand-card {
+        padding: 8px 11px;
+      }
+
+      .brand-title {
+        font-size: 0.95rem;
+      }
+
+      .scale-badge {
+        display: none; /* Scale disclaimer remains clearly visible inside Info Panel */
+      }
+
+      .info-panel {
+        top: auto;
+        bottom: 118px;
+        right: 10px;
+        left: 10px;
+        width: auto;
+        max-height: 40vh;
+        padding: 12px 14px;
+      }
+
+      .panel-collapse-btn {
+        display: inline-flex;
+      }
+
+      .info-panel.collapsed .info-body {
+        display: none;
+      }
+
+      .controls-dock {
+        bottom: 8px;
+        padding: 8px 10px;
+        gap: 7px 9px;
+        width: calc(100vw - 20px);
+      }
+
+      .control-divider {
+        display: none;
+      }
+
+      .speed-slider {
+        width: 82px;
+      }
+
+      .btn {
+        padding: 6px 9px;
+        font-size: 0.78rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .brand-hint {
+        font-size: 0.7rem;
+      }
+
+      .info-panel {
+        bottom: 146px;
+        max-height: 36vh;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .ctrl-label.hide-xs {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Animated Starfield Background Canvas -->
+  <canvas id="starfield" aria-hidden="true"></canvas>
+
+  <!-- Top-Left Title & Scale Notice -->
+  <header class="hud-header">
+    <div class="brand-card">
+      <h1 class="brand-title">
+        <span class="brand-dot" aria-hidden="true"></span>
+        3D Solar System Explorer
+      </h1>
+      <p class="brand-hint">Drag to rotate 3D view &bull; Scroll/Pinch to zoom &bull; Click any world</p>
+    </div>
+    <div class="scale-badge" role="note">
+      <span>&#9432;</span>
+      <span>Sizes &amp; orbital distances are stylized for visibility (not to physical scale)</span>
+    </div>
+  </header>
+
+  <!-- Interactive 3D Viewport -->
+  <main id="viewport" class="viewport" aria-label="Interactive 3D Solar System">
+    <div class="scene">
+      <div id="solarSystem" class="solar-system">
+        <!-- Orbit rings, Sun, and Planets are dynamically populated by JavaScript -->
+      </div>
+    </div>
+  </main>
+
+  <!-- Educational Planet Information Panel -->
+  <aside id="infoPanel" class="info-panel" aria-live="polite">
+    <div class="info-header">
+      <div class="info-identity">
+        <div class="preview-badge" aria-hidden="true">
+          <div id="previewSphere" class="preview-sphere surface-earth"></div>
+          <div id="previewRing" class="preview-ring"></div>
+        </div>
+        <div class="info-titles">
+          <h2 id="infoName" class="info-name">Earth</h2>
+          <span id="infoType" class="info-type">Terrestrial Planet</span>
+        </div>
+      </div>
+      <button id="togglePanelBtn" class="panel-collapse-btn" type="button" aria-expanded="true">
+        Hide Details
+      </button>
+    </div>
+
+    <div class="info-body">
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-label">Approx. Diameter</div>
+          <div id="infoDiameter" class="stat-value">12,742 km</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Orbital Period</div>
+          <div id="infoPeriod" class="stat-value">365.25 Earth days</div>
+        </div>
+        <div class="stat-box full-width">
+          <div class="stat-label">Distance from the Sun</div>
+          <div id="infoDistance" class="stat-value">149.6 million km (1.00 AU)</div>
+        </div>
+      </div>
+
+      <div class="fact-card">
+        <div class="fact-heading">Interesting Fact</div>
+        <p id="infoFact" class="fact-text"></p>
+      </div>
+
+      <p class="disclaimer-note">
+        <strong>Educational Model Note:</strong> Planetary diameters, rings, and orbital distances are stylized so all worlds can be explored together and are not drawn to true physical scale.
+      </p>
+    </div>
+  </aside>
+
+  <!-- Bottom Control Dock -->
+  <section class="controls-dock" aria-label="Solar System Controls">
+    <!-- Feature 6: Synchronized Planet Selection Dropdown -->
+    <div class="control-group">
+      <label for="planetSelect" class="ctrl-label hide-xs">Explore:</label>
+      <select id="planetSelect" class="planet-select" aria-label="Select celestial body">
+        <!-- Populated by JS -->
+      </select>
+    </div>
+
+    <div class="control-divider" aria-hidden="true"></div>
+
+    <!-- Feature 7: Play & Pause Animation Buttons -->
+    <div class="control-group" role="group" aria-label="Animation playback">
+      <button id="playBtn" class="btn active" type="button" title="Play orbital animation">
+        &#9654; Play
+      </button>
+      <button id="pauseBtn" class="btn" type="button" title="Pause orbital animation">
+        &#10074;&#10074; Pause
+      </button>
+    </div>
+
+    <div class="control-divider" aria-hidden="true"></div>
+
+    <!-- Feature 8: Orbit Speed Slider -->
+    <div class="control-group">
+      <label for="speedSlider" class="ctrl-label">Speed:</label>
+      <input
+        id="speedSlider"
+        class="speed-slider"
+        type="range"
+        min="0.1"
+        max="5.0"
+        step="0.1"
+        value="1.0"
+        aria-label="Orbit animation speed"
+      />
+      <span id="speedReadout" class="readout-pill">1.0&times;</span>
+    </div>
+
+    <div class="control-divider" aria-hidden="true"></div>
+
+    <!-- Feature 3: Zoom In & Zoom Out Buttons -->
+    <div class="control-group" role="group" aria-label="Zoom controls">
+      <button id="zoomOutBtn" class="btn btn-icon" type="button" title="Zoom Out" aria-label="Zoom Out">
+        &minus;
+      </button>
+      <span id="zoomReadout" class="readout-pill">100%</span>
+      <button id="zoomInBtn" class="btn btn-icon" type="button" title="Zoom In" aria-label="Zoom In">
+        &#43;
+      </button>
+    </div>
+
+    <div class="control-divider" aria-hidden="true"></div>
+
+    <!-- Labels Toggle & Feature 9: Reset View Button -->
+    <div class="control-group">
+      <button id="labelsBtn" class="btn active" type="button" title="Toggle planet labels">
+        Labels
+      </button>
+      <button id="resetBtn" class="btn" type="button" title="Restore original camera position, zoom, and speed">
+        &#8634; Reset View
+      </button>
+    </div>
+  </section>
+
+  <script>
+    (function () {
+      'use strict';
+
+      /* ========================================================================
+         1. CELESTIAL BODY DATASET (Realistic Educational Astronomy Values)
+         ======================================================================== */
+      const BODIES = [
+        {
+          id: 'sun',
+          name: 'The Sun',
+          type: 'Yellow Dwarf Star',
+          diameter: '1,392,700 km',
+          distance: '0 km (Center of Solar System)',
+          period: '~230 million yrs (Galactic orbit)',
+          fact: 'The Sun holds 99.86% of all mass in the Solar System. Every second, nuclear fusion in its core converts about 600 million tons of hydrogen into helium, releasing the light and heat that sustain Earth.',
+          orbitRadius: 0,
+          visualSize: 54,
+          angularSpeed: 0,
+          initialAngle: 0,
+          surfaceClass: 'surface-sun',
+          isStar: true
+        },
+        {
+          id: 'mercury',
+          name: 'Mercury',
+          type: 'Terrestrial Planet',
+          diameter: '4,879 km',
+          distance: '57.9 million km (0.39 AU)',
+          period: '88 Earth days',
+          fact: 'Although Mercury is the closest planet to the Sun, it is not the hottest! Without a thick atmosphere to trap heat, its surface swings from 430°C (800°F) in daylight to -180°C (-290°F) at night.',
+          orbitRadius: 68,
+          visualSize: 11,
+          angularSpeed: 1.25,
+          initialAngle: 0.8,
+          surfaceClass: 'surface-mercury'
+        },
+        {
+          id: 'venus',
+          name: 'Venus',
+          type: 'Terrestrial Planet',
+          diameter: '12,104 km',
+          distance: '108.2 million km (0.72 AU)',
+          period: '224.7 Earth days',
+          fact: 'Venus spins backward (retrograde rotation) compared to most planets, so the Sun rises in the west and sets in the east. Its thick carbon dioxide atmosphere makes it the hottest planet at ~465°C.',
+          orbitRadius: 102,
+          visualSize: 16,
+          angularSpeed: 0.78,
+          initialAngle: 2.3,
+          surfaceClass: 'surface-venus'
+        },
+        {
+          id: 'earth',
+          name: 'Earth',
+          type: 'Terrestrial Planet',
+          diameter: '12,742 km',
+          distance: '149.6 million km (1.00 AU)',
+          period: '365.25 Earth days',
+          fact: 'Earth is the only known world in the universe with stable liquid water on its surface and an oxygen-rich atmosphere capable of supporting millions of diverse living species.',
+          orbitRadius: 140,
+          visualSize: 17,
+          angularSpeed: 0.54,
+          initialAngle: 4.1,
+          surfaceClass: 'surface-earth'
+        },
+        {
+          id: 'mars',
+          name: 'Mars',
+          type: 'Terrestrial Planet',
+          diameter: '6,779 km',
+          distance: '227.9 million km (1.52 AU)',
+          period: '687 Earth days (1.88 yrs)',
+          fact: 'Mars gets its rusty red color from iron oxide dust on its surface and boasts Olympus Mons—the largest volcano in the Solar System, standing nearly three times taller than Mount Everest.',
+          orbitRadius: 178,
+          visualSize: 13,
+          angularSpeed: 0.39,
+          initialAngle: 5.5,
+          surfaceClass: 'surface-mars'
+        },
+        {
+          id: 'jupiter',
+          name: 'Jupiter',
+          type: 'Gas Giant',
+          diameter: '139,820 km',
+          distance: '778.5 million km (5.20 AU)',
+          period: '11.86 Earth years',
+          fact: 'Jupiter is more than twice as massive as all the other planets combined. Its famous Great Red Spot is a giant high-pressure storm wider than Earth that has been raging for over 300 years.',
+          orbitRadius: 236,
+          visualSize: 34,
+          angularSpeed: 0.22,
+          initialAngle: 1.4,
+          surfaceClass: 'surface-jupiter'
+        },
+        {
+          id: 'saturn',
+          name: 'Saturn',
+          type: 'Gas Giant',
+          diameter: '116,460 km',
+          distance: '1,432 million km (9.58 AU)',
+          period: '29.45 Earth years',
+          fact: 'Saturn’s iconic rings span up to 282,000 km wide—nearly three-quarters of the distance from Earth to the Moon—yet average only about 10 to 30 meters thick! Saturn is also less dense than water.',
+          orbitRadius: 304,
+          visualSize: 28,
+          ringSize: 68,
+          ringClass: 'ring-saturn',
+          angularSpeed: 0.15,
+          initialAngle: 3.3,
+          surfaceClass: 'surface-saturn'
+        },
+        {
+          id: 'uranus',
+          name: 'Uranus',
+          type: 'Ice Giant',
+          diameter: '50,724 km',
+          distance: '2,867 million km (19.19 AU)',
+          period: '84.0 Earth years',
+          fact: 'Uranus rotates almost completely on its side at a 97.8° tilt, likely from an ancient giant collision. Each pole experiences 42 continuous years of sunlight followed by 42 years of darkness.',
+          orbitRadius: 368,
+          visualSize: 22,
+          ringSize: 44,
+          ringClass: 'ring-uranus',
+          angularSpeed: 0.105,
+          initialAngle: 5.0,
+          surfaceClass: 'surface-uranus'
+        },
+        {
+          id: 'neptune',
+          name: 'Neptune',
+          type: 'Ice Giant',
+          diameter: '49,244 km',
+          distance: '4,515 million km (30.07 AU)',
+          period: '164.8 Earth years',
+          fact: 'Neptune was the first planet found using mathematics before being observed through a telescope in 1846. It drives the fastest supersonic winds in the Solar System, exceeding 2,100 km/h.',
+          orbitRadius: 424,
+          visualSize: 21,
+          angularSpeed: 0.078,
+          initialAngle: 0.35,
+          surfaceClass: 'surface-neptune'
+        }
+      ];
+
+      /* ========================================================================
+         2. APPLICATION STATE & CAMERA DEFAULTS
+         ======================================================================== */
+      function getDefaultZoom() {
+        const minDim = Math.min(window.innerWidth, window.innerHeight);
+        if (window.innerWidth < 520) return 0.48;
+        if (window.innerWidth < 900) return 0.68;
+        return minDim < 740 ? 0.82 : 0.94;
+      }
+
+      const DEFAULT_PITCH = 63;   // Tilt angle looking down at the orbital plane (degrees)
+      const DEFAULT_YAW = -22;    // Horizontal turntable angle (degrees)
+      const MIN_ZOOM = 0.32;
+      const MAX_ZOOM = 2.40;
+      const ZOOM_STEP = 0.16;
+
+      const state = {
+        pitch: DEFAULT_PITCH,
+        yaw: DEFAULT_YAW,
+        targetPitch: DEFAULT_PITCH,
+        targetYaw: DEFAULT_YAW,
+        zoom: getDefaultZoom(),
+        targetZoom: getDefaultZoom(),
+        isPlaying: true,
+        speedMultiplier: 1.0,
+        selectedId: 'earth',
+        showLabels: true,
+        isDragging: false,
+        pointerDownX: 0,
+        pointerDownY: 0,
+        lastPointerX: 0,
+        lastPointerY: 0,
+        dragDistance: 0,
+        pinchStartDist: 0,
+        pinchStartZoom: 1
+      };
+
+      /* ========================================================================
+         3. DOM ELEMENT REFERENCES & DYNAMIC 3D SCENE CONSTRUCTION
+         ======================================================================== */
+      const viewportEl = document.getElementById('viewport');
+      const solarSystemEl = document.getElementById('solarSystem');
+      const planetSelectEl = document.getElementById('planetSelect');
+      const playBtn = document.getElementById('playBtn');
+      const pauseBtn = document.getElementById('pauseBtn');
+      const speedSlider = document.getElementById('speedSlider');
+      const speedReadout = document.getElementById('speedReadout');
+      const zoomInBtn = document.getElementById('zoomInBtn');
+      const zoomOutBtn = document.getElementById('zoomOutBtn');
+      const zoomReadout = document.getElementById('zoomReadout');
+      const labelsBtn = document.getElementById('labelsBtn');
+      const resetBtn = document.getElementById('resetBtn');
+
+      const infoPanel = document.getElementById('infoPanel');
+      const togglePanelBtn = document.getElementById('togglePanelBtn');
+      const previewSphere = document.getElementById('previewSphere');
+      const previewRing = document.getElementById('previewRing');
+      const infoName = document.getElementById('infoName');
+      const infoType = document.getElementById('infoType');
+      const infoDiameter = document.getElementById('infoDiameter');
+      const infoPeriod = document.getElementById('infoPeriod');
+      const infoDistance = document.getElementById('infoDistance');
+      const infoFact = document.getElementById('infoFact');
+
+      // Store runtime references for each celestial body
+      const bodyNodes = new Map();
+
+      function buildSolarSystem() {
+        solarSystemEl.innerHTML = '';
+        planetSelectEl.innerHTML = '';
+
+        BODIES.forEach((body) => {
+          // 1. Add option to synchronized dropdown
+          const option = document.createElement('option');
+          option.value = body.id;
+          option.textContent = body.name;
+          planetSelectEl.appendChild(option);
+
+          // 2. Create visible orbital path ring for planets
+          let orbitRingEl = null;
+          if (body.orbitRadius > 0) {
+            orbitRingEl = document.createElement('div');
+            orbitRingEl.className = 'orbit-ring';
+            orbitRingEl.style.width = (body.orbitRadius * 2) + 'px';
+            orbitRingEl.style.height = (body.orbitRadius * 2) + 'px';
+            solarSystemEl.appendChild(orbitRingEl);
+          }
+
+          // 3. Create 3D position carrier in the orbital plane
+          const carrierEl = document.createElement('div');
+          carrierEl.className = 'body-carrier';
+
+          // Optional 3D planetary ring (remains in 3D space so it tilts authentically!)
+          if (body.ringSize) {
+            const ring3DEl = document.createElement('div');
+            ring3DEl.className = 'planetary-ring-3d ' + body.ringClass;
+            ring3DEl.style.width = body.ringSize + 'px';
+            ring3DEl.style.height = body.ringSize + 'px';
+            carrierEl.appendChild(ring3DEl);
+          }
+
+          // 4. Create Billboard wrapper that counter-rotates to always face camera
+          const billboardEl = document.createElement('div');
+          billboardEl.className = 'billboard';
+
+          // Selection highlight reticle
+          const reticleSize = Math.max(body.visualSize + 16, 32);
+          const reticleEl = document.createElement('div');
+          reticleEl.className = 'selection-reticle';
+          reticleEl.style.width = reticleSize + 'px';
+          reticleEl.style.height = reticleSize + 'px';
+          billboardEl.appendChild(reticleEl);
+
+          // Generous clickable hit target (minimum 38px so small/moving planets are effortless to tap)
+          const hitSize = Math.max(body.visualSize + 18, 38);
+          const hitEl = document.createElement('div');
+          hitEl.className = 'planet-hit';
+          hitEl.style.width = hitSize + 'px';
+          hitEl.style.height = hitSize + 'px';
+          hitEl.setAttribute('role', 'button');
+          hitEl.setAttribute('tabindex', '0');
+          hitEl.setAttribute('aria-label', 'Select ' + body.name);
+
+          // Visual Sphere
+          const sphereEl = document.createElement('div');
+          sphereEl.className = 'planet-sphere ' + body.surfaceClass;
+          sphereEl.style.width = body.visualSize + 'px';
+          sphereEl.style.height = body.visualSize + 'px';
+
+          // Dynamic Sun-facing directional shadow + 3D specular gloss for planets
+          let shadowEl = null;
+          if (!body.isStar) {
+            shadowEl = document.createElement('div');
+            shadowEl.className = 'planet-shadow';
+            sphereEl.appendChild(shadowEl);
+
+            const glossEl = document.createElement('div');
+            glossEl.className = 'planet-gloss';
+            sphereEl.appendChild(glossEl);
+          }
+
+          hitEl.appendChild(sphereEl);
+          billboardEl.appendChild(hitEl);
+
+          // Floating Label below planet
+          const labelEl = document.createElement('div');
+          labelEl.className = 'planet-label';
+          labelEl.textContent = body.id === 'sun' ? 'Sun' : body.name;
+          labelEl.style.top = (body.visualSize * 0.5 + 8) + 'px';
+          billboardEl.appendChild(labelEl);
+
+          // Selection handlers (guarding against camera drag gestures)
+          const handleSelect = (e) => {
+            e.stopPropagation();
+            if (state.dragDistance < 7) {
+              selectBody(body.id);
+            }
+          };
+
+          hitEl.addEventListener('click', handleSelect);
+          labelEl.addEventListener('click', handleSelect);
+          hitEl.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              selectBody(body.id);
+            }
+          });
+
+          carrierEl.appendChild(billboardEl);
+          solarSystemEl.appendChild(carrierEl);
+
+          bodyNodes.set(body.id, {
+            data: body,
+            angle: body.initialAngle,
+            carrierEl,
+            billboardEl,
+            shadowEl,
+            orbitRingEl
+          });
+        });
+      }
+
+      /* ========================================================================
+         4. SELECTION & EDUCATIONAL INFO PANEL SYNCHRONIZATION
+         ======================================================================== */
+      function selectBody(bodyId) {
+        if (!bodyNodes.has(bodyId)) return;
+        state.selectedId = bodyId;
+
+        // Sync dropdown value
+        planetSelectEl.value = bodyId;
+
+        // Update 3D scene selection highlights
+        bodyNodes.forEach((node, id) => {
+          const isSelected = id === bodyId;
+          node.carrierEl.classList.toggle('is-selected', isSelected);
+          if (node.orbitRingEl) {
+            node.orbitRingEl.classList.toggle('selected', isSelected);
+          }
+        });
+
+        // Update Educational Info Panel content
+        const body = bodyNodes.get(bodyId).data;
+        infoName.textContent = body.name;
+        infoType.textContent = body.type;
+        infoDiameter.textContent = body.diameter;
+        infoPeriod.textContent = body.period;
+        infoDistance.textContent = body.distance;
+        infoFact.textContent = body.fact;
+
+        // Update mini preview sphere inside info panel
+        previewSphere.className = 'preview-sphere ' + body.surfaceClass;
+        if (body.id === 'saturn') {
+          previewRing.style.display = 'block';
+          previewRing.style.borderColor = 'rgba(250, 224, 150, 0.85)';
+        } else if (body.id === 'uranus') {
+          previewRing.style.display = 'block';
+          previewRing.style.borderColor = 'rgba(103, 232, 249, 0.65)';
+        } else {
+          previewRing.style.display = 'none';
+        }
+      }
+
+      /* ========================================================================
+         5. CAMERA ROTATION, TOUCH GESTURES & ZOOM INTERACTIONS
+         ======================================================================== */
+      function setZoom(nextZoom) {
+        state.targetZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, nextZoom));
+        const pct = Math.round((state.targetZoom / getDefaultZoom()) * 100);
+        zoomReadout.textContent = pct + '%';
+      }
+
+      // Mouse Drag Rotation on Viewport
+      viewportEl.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return;
+        state.isDragging = true;
+        state.dragDistance = 0;
+        state.pointerDownX = e.clientX;
+        state.pointerDownY = e.clientY;
+        state.lastPointerX = e.clientX;
+        state.lastPointerY = e.clientY;
+        viewportEl.classList.add('dragging');
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!state.isDragging) return;
+        const dx = e.clientX - state.lastPointerX;
+        const dy = e.clientY - state.lastPointerY;
+        state.lastPointerX = e.clientX;
+        state.lastPointerY = e.clientY;
+        state.dragDistance += Math.hypot(dx, dy);
+
+        // Adjust Yaw (horizontal orbit spin) and Pitch (vertical tilt)
+        state.targetYaw -= dx * 0.42;
+        state.targetPitch = Math.max(-82, Math.min(85, state.targetPitch - dy * 0.36));
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (state.isDragging) {
+          state.isDragging = false;
+          viewportEl.classList.remove('dragging');
+        }
+      });
+
+      // Touch Gestures: Single-Finger Rotate & Two-Finger Pinch Zoom
+      viewportEl.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          state.isDragging = true;
+          state.dragDistance = 0;
+          state.lastPointerX = e.touches[0].clientX;
+          state.lastPointerY = e.touches[0].clientY;
+        } else if (e.touches.length === 2) {
+          state.isDragging = false;
+          const dx = e.touches[0].clientX - e.touches[1].clientX;
+          const dy = e.touches[0].clientY - e.touches[1].clientY;
+          state.pinchStartDist = Math.hypot(dx, dy);
+          state.pinchStartZoom = state.targetZoom;
+        }
+      }, { passive: true });
+
+      viewportEl.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 1 && state.isDragging) {
+          const x = e.touches[0].clientX;
+          const y = e.touches[0].clientY;
+          const dx = x - state.lastPointerX;
+          const dy = y - state.lastPointerY;
+          state.lastPointerX = x;
+          state.lastPointerY = y;
+          state.dragDistance += Math.hypot(dx, dy);
+
+          state.targetYaw -= dx * 0.48;
+          state.targetPitch = Math.max(-82, Math.min(85, state.targetPitch - dy * 0.40));
+        } else if (e.touches.length === 2 && state.pinchStartDist > 0) {
+          const dx = e.touches[0].clientX - e.touches[1].clientX;
+          const dy = e.touches[0].clientY - e.touches[1].clientY;
+          const dist = Math.hypot(dx, dy);
+          const scaleFactor = dist / state.pinchStartDist;
+          setZoom(state.pinchStartZoom * scaleFactor);
+        }
+      }, { passive: true });
+
+      viewportEl.addEventListener('touchend', () => {
+        state.isDragging = false;
+        state.pinchStartDist = 0;
+      });
+
+      // Mouse Wheel Zoom (only on 3D viewport, never interfering with UI panels)
+      viewportEl.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const factor = e.deltaY < 0 ? 1.09 : 0.91;
+        setZoom(state.targetZoom * factor);
+      }, { passive: false });
+
+      /* ========================================================================
+         6. UI CONTROL LISTENERS (Dropdown, Play/Pause, Speed, Zoom, Reset)
+         ======================================================================== */
+      planetSelectEl.addEventListener('change', (e) => {
+        selectBody(e.target.value);
+      });
+
+      function setPlaying(playing) {
+        state.isPlaying = playing;
+        playBtn.classList.toggle('active', playing);
+        pauseBtn.classList.toggle('active', !playing);
+      }
+
+      playBtn.addEventListener('click', () => setPlaying(true));
+      pauseBtn.addEventListener('click', () => setPlaying(false));
+
+      speedSlider.addEventListener('input', (e) => {
+        state.speedMultiplier = parseFloat(e.target.value);
+        speedReadout.innerHTML = state.speedMultiplier.toFixed(1) + '&times;';
+      });
+
+      zoomInBtn.addEventListener('click', () => {
+        setZoom(state.targetZoom + ZOOM_STEP);
+      });
+
+      zoomOutBtn.addEventListener('click', () => {
+        setZoom(state.targetZoom - ZOOM_STEP);
+      });
+
+      labelsBtn.addEventListener('click', () => {
+        state.showLabels = !state.showLabels;
+        labelsBtn.classList.toggle('active', state.showLabels);
+        solarSystemEl.classList.toggle('labels-hidden', !state.showLabels);
+      });
+
+      resetBtn.addEventListener('click', () => {
+        state.targetPitch = DEFAULT_PITCH;
+        state.targetYaw = DEFAULT_YAW;
+        setZoom(getDefaultZoom());
+        state.speedMultiplier = 1.0;
+        speedSlider.value = '1.0';
+        speedReadout.innerHTML = '1.0&times;';
+        setPlaying(true);
+      });
+
+      togglePanelBtn.addEventListener('click', () => {
+        const isCollapsed = infoPanel.classList.toggle('collapsed');
+        togglePanelBtn.textContent = isCollapsed ? 'Show Details' : 'Hide Details';
+        togglePanelBtn.setAttribute('aria-expanded', String(!isCollapsed));
+      });
+
+      /* ========================================================================
+         7. STARFIELD BACKGROUND RENDERER (Pure HTML5 Canvas)
+         ======================================================================== */
+      const starCanvas = document.getElementById('starfield');
+      const starCtx = starCanvas.getContext('2d');
+      let stars = [];
+
+      function initStars() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        starCanvas.width = Math.floor(window.innerWidth * dpr);
+        starCanvas.height = Math.floor(window.innerHeight * dpr);
+        starCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        const count = Math.min(280, Math.floor((window.innerWidth * window.innerHeight) / 4800));
+        stars = [];
+        for (let i = 0; i < count; i++) {
+          stars.push({
+            x: Math.random() * window.innerWidth,
+            y: Math.random() * window.innerHeight,
+            r: Math.random() * 1.45 + 0.35,
+            baseAlpha: Math.random() * 0.65 + 0.25,
+            phase: Math.random() * Math.PI * 2,
+            twinkleSpeed: Math.random() * 1.6 + 0.4,
+            hue: Math.random() > 0.8 ? '#bae6fd' : (Math.random() > 0.85 ? '#fef08a' : '#ffffff')
+          });
+        }
+      }
+
+      function renderStars(timeSec) {
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+
+        // Deep cosmic nebula radial backdrop
+        const bgGrad = starCtx.createRadialGradient(w * 0.5, h * 0.48, 20, w * 0.5, h * 0.5, Math.max(w, h) * 0.72);
+        bgGrad.addColorStop(0, '#0c1631');
+        bgGrad.addColorStop(0.48, '#060b19');
+        bgGrad.addColorStop(1, '#02040a');
+        starCtx.fillStyle = bgGrad;
+        starCtx.fillRect(0, 0, w, h);
+
+        for (let i = 0; i < stars.length; i++) {
+          const s = stars[i];
+          const alpha = s.baseAlpha * (0.72 + 0.28 * Math.sin(timeSec * s.twinkleSpeed + s.phase));
+          starCtx.globalAlpha = alpha;
+          starCtx.fillStyle = s.hue;
+          starCtx.beginPath();
+          starCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          starCtx.fill();
+        }
+        starCtx.globalAlpha = 1;
+      }
+
+      window.addEventListener('resize', () => {
+        initStars();
+        setZoom(state.targetZoom);
+      });
+
+      /* ========================================================================
+         8. MAIN 60FPS 3D ANIMATION & BILLBOARD TRANSFORM LOOP
+         ======================================================================== */
+      const DEG_TO_RAD = Math.PI / 180;
+      let lastFrameTime = performance.now();
+
+      function animate(now) {
+        const dt = Math.min((now - lastFrameTime) / 1000, 0.1);
+        lastFrameTime = now;
+
+        // Smoothly damp camera rotation & zoom for fluid interaction
+        const smoothing = 1 - Math.pow(0.0012, dt);
+        state.pitch += (state.targetPitch - state.pitch) * smoothing;
+        state.yaw += (state.targetYaw - state.yaw) * smoothing;
+        state.zoom += (state.targetZoom - state.zoom) * smoothing;
+
+        // Apply root 3D camera transform
+        solarSystemEl.style.transform =
+          `scale3d(${state.zoom.toFixed(4)}, ${state.zoom.toFixed(4)}, ${state.zoom.toFixed(4)}) ` +
+          `rotateX(${state.pitch.toFixed(3)}deg) rotateZ(${state.yaw.toFixed(3)}deg)`;
+
+        const yawRad = state.yaw * DEG_TO_RAD;
+        const pitchRad = state.pitch * DEG_TO_RAD;
+        const cosYaw = Math.cos(yawRad);
+        const sinYaw = Math.sin(yawRad);
+        const cosPitch = Math.cos(pitchRad);
+        const sinPitch = Math.sin(pitchRad);
+
+        // Exact inverse rotation keeps every planet sphere facing straight at the viewer
+        const billboardTransform =
+          `rotateZ(${(-state.yaw).toFixed(3)}deg) rotateX(${(-state.pitch).toFixed(3)}deg)`;
+
+        bodyNodes.forEach((node) => {
+          const body = node.data;
+
+          // Increment orbital angle smoothly using delta-time so speed changes never jump
+          if (state.isPlaying && body.angularSpeed > 0) {
+            node.angle = (node.angle + body.angularSpeed * state.speedMultiplier * dt) % (Math.PI * 2);
+          }
+
+          const x = Math.cos(node.angle) * body.orbitRadius;
+          const y = Math.sin(node.angle) * body.orbitRadius;
+
+          node.carrierEl.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0px)`;
+          node.billboardEl.style.transform = billboardTransform;
+
+          // Compute screen-space vector away from the central Sun for realistic 3D lighting
+          if (node.shadowEl) {
+            const x1 = x * cosYaw - y * sinYaw;
+            const y1 = x * sinYaw + y * cosYaw;
+            const screenX = x1;
+            const screenY = y1 * cosPitch;
+            const screenZ = y1 * sinPitch; // +Z is closer to viewer (night side more visible)
+
+            const shadowAngleDeg = Math.atan2(screenY, screenX) / DEG_TO_RAD;
+            const depthNorm = body.orbitRadius > 0 ? (screenZ / body.orbitRadius) : 0;
+            const shadowOpacity = Math.max(0.42, Math.min(0.92, 0.68 + depthNorm * 0.24));
+
+            node.shadowEl.style.transform = `rotate(${shadowAngleDeg.toFixed(1)}deg)`;
+            node.shadowEl.style.opacity = shadowOpacity.toFixed(2);
+          }
+        });
+
+        renderStars(now * 0.001);
+        requestAnimationFrame(animate);
+      }
+
+      /* ========================================================================
+         9. INITIALIZE APPLICATION
+         ======================================================================== */
+      window.addEventListener('load', () => {
+        initStars();
+        buildSolarSystem();
+        selectBody('earth');
+        setZoom(getDefaultZoom());
+        lastFrameTime = performance.now();
+        requestAnimationFrame(animate);
+      });
+    })();
+  </script>
+</body>
+</html>

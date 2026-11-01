@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laptop Decision Helper – Choose the Best Laptop for Your Budget</title>
+  <style>
+    :root {
+      --primary-navy: #0f172a;
+      --secondary-navy: #1e293b;
+      --brand-blue: #2563eb;
+      --brand-blue-hover: #1d4ed8;
+      --light-blue: #eff6ff;
+      --accent-cyan: #0284c7;
+      --bg-page: #f8fafc;
+      --bg-surface: #ffffff;
+      --border-color: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --success-green: #10b981;
+      --warning-amber: #f59e0b;
+      --danger-red: #ef4444;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(15,23,42,0.08), 0 4px 6px -4px rgba(15,23,42,0.04);
+      --shadow-glow: 0 10px 25px -5px rgba(37, 99, 235, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      line-height: 1.5;
+      padding-bottom: 60px;
+    }
+
+    /* Header & Navigation */
+    header {
+      background: var(--primary-navy);
+      color: #ffffff;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.2rem;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-logo svg {
+      width: 28px;
+      height: 28px;
+      fill: #60a5fa;
+    }
+
+    .nav-badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: rgba(96, 165, 250, 0.18);
+      color: #93c5fd;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      border: 1px solid rgba(147, 197, 253, 0.3);
+    }
+
+    /* Hero Section */
+    .hero-banner {
+      background: linear-gradient(180deg, var(--primary-navy) 0%, #1e293b 100%);
+      color: #ffffff;
+      padding: 2.5rem 1.5rem 3.5rem;
+      text-align: center;
+    }
+
+    .hero-banner h1 {
+      font-size: clamp(1.8rem, 4vw, 2.5rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.6rem;
+    }
+
+    .hero-banner p {
+      color: #94a3b8;
+      max-width: 650px;
+      margin: 0 auto;
+      font-size: 1.05rem;
+    }
+
+    /* Main Container */
+    .main-layout {
+      max-width: 1240px;
+      margin: -2rem auto 0;
+      padding: 0 1.25rem;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 1.75rem;
+      align-items: start;
+    }
+
+    @media (max-width: 992px) {
+      .main-layout {
+        grid-template-columns: 1fr;
+        margin-top: -1.5rem;
+      }
+    }
+
+    /* Panels & Cards */
+    .card-panel {
+      background: var(--bg-surface);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-sm);
+      padding: 1.5rem;
+    }
+
+    /* Filter Controls Column */
+    .controls-panel {
+      position: sticky;
+      top: 5rem;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .panel-header h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--primary-navy);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-reset {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn-reset:hover {
+      background: #f1f5f9;
+      color: var(--primary-navy);
+      border-color: #cbd5e1;
+    }
+
+    .form-group {
+      margin-bottom: 1.4rem;
+    }
+
+    .form-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 0.5rem;
+    }
+
+    .form-label {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--secondary-navy);
+    }
+
+    .budget-display {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--brand-blue);
+    }
+
+    .slider-val-badge {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--brand-blue);
+      background: var(--light-blue);
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 7px;
+      background: #e2e8f0;
+      border-radius: 5px;
+      outline: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--brand-blue);
+      cursor: pointer;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+      background: var(--brand-blue-hover);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--brand-blue);
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+    }
+
+    .range-limits {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Purpose Chips */
+    .purpose-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .purpose-btn {
+      background: #f8fafc;
+      border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--secondary-navy);
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.18s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .purpose-btn:hover {
+      border-color: #93c5fd;
+      background: #ffffff;
+    }
+
+    .purpose-btn.active {
+      background: var(--light-blue);
+      border-color: var(--brand-blue);
+      color: var(--brand-blue);
+      box-shadow: 0 0 0 1px var(--brand-blue);
+    }
+
+    .purpose-btn span.icon {
+      font-size: 1.1rem;
+    }
+
+    /* Weight sliders section */
+    .slider-hint {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    /* Results Column */
+    .results-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* Recommended Highlight Card */
+    .recommended-banner {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+      color: #ffffff;
+      border-radius: var(--radius-md);
+      padding: 1.75rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-glow);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .recommended-banner::after {
+      content: "";
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 180px;
+      height: 180px;
+      background: radial-gradient(circle, rgba(59,130,246,0.3) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .rec-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .rec-tag {
+      background: linear-gradient(90deg, #f59e0b, #d97706);
+      color: #ffffff;
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .rec-score-pill {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(8px);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border: 1px solid rgba(255,255,255,0.25);
+    }
+
+    .rec-score-pill strong {
+      font-size: 1.15rem;
+      color: #93c5fd;
+    }
+
+    .rec-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      line-height: 1.25;
+      margin-bottom: 0.35rem;
+    }
+
+    .rec-price {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #38bdf8;
+      margin-bottom: 1rem;
+    }
+
+    .rec-specs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 0.75rem;
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: var(--radius-sm);
+      padding: 0.85rem;
+      margin-bottom: 1rem;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .spec-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .spec-item .label {
+      font-size: 0.72rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .spec-item .val {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+
+    .rec-explanation {
+      background: rgba(255, 255, 255, 0.08);
+      border-left: 3px solid #38bdf8;
+      padding: 0.75rem 1rem;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      font-size: 0.88rem;
+      line-height: 1.45;
+      color: #e2e8f0;
+    }
+
+    .rec-explanation strong {
+      color: #ffffff;
+    }
+
+    /* Warning alert when no laptop is in budget */
+    .over-budget-warning {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+      padding: 1.25rem;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.95rem;
+    }
+
+    .over-budget-warning svg {
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+      fill: #ef4444;
+    }
+
+    /* Laptop Cards Grid */
+    .section-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.5rem;
+    }
+
+    .section-title {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--primary-navy);
+    }
+
+    .sort-indicator {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .cards-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .laptop-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.25rem 1.4rem;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      display: grid;
+      grid-template-columns: 1fr 220px;
+      gap: 1.25rem;
+      position: relative;
+    }
+
+    @media (max-width: 768px) {
+      .laptop-card {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .laptop-card:hover {
+      box-shadow: var(--shadow-md);
+      border-color: #cbd5e1;
+    }
+
+    .laptop-card.top-ranked {
+      border: 2px solid var(--brand-blue);
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.12);
+    }
+
+    .laptop-card.disqualified {
+      opacity: 0.65;
+      background: #fafafa;
+      border-style: dashed;
+    }
+
+    .card-meta-top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 0.35rem;
+      flex-wrap: wrap;
+    }
+
+    .category-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .category-student { background: #dbeafe; color: #1e40af; }
+    .category-programming { background: #e0e7ff; color: #4338ca; }
+    .category-gaming { background: #fce7f3; color: #be185d; }
+    .category-business { background: #dcfce7; color: #15803d; }
+    .category-premium { background: #fef3c7; color: #b45309; }
+
+    .rank-pill {
+      font-size: 0.72rem;
+      font-weight: 700;
+      background: #f1f5f9;
+      color: #475569;
+      padding: 3px 8px;
+      border-radius: 999px;
+    }
+
+    .budget-status-pill {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    .budget-ok { background: #ecfdf5; color: #047857; }
+    .budget-exceeded { background: #fef2f2; color: #b91c1c; }
+
+    .laptop-name {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--primary-navy);
+      margin-bottom: 0.2rem;
+    }
+
+    .laptop-price {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--brand-blue);
+      margin-bottom: 0.75rem;
+    }
+
+    .specs-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 0.75rem;
+    }
+
+    .spec-chip {
+      font-size: 0.76rem;
+      background: #f1f5f9;
+      color: var(--secondary-navy);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .laptop-usage-hint {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* Right Score Column inside Card */
+    .card-score-box {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: #f8fafc;
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      border: 1px solid var(--border-color);
+      text-align: center;
+    }
+
+    .score-number {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--primary-navy);
+      line-height: 1;
+    }
+
+    .score-out-of {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 0.6rem;
+    }
+
+    .score-progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 0.6rem;
+    }
+
+    .score-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--brand-blue), #38bdf8);
+      border-radius: 999px;
+      transition: width 0.3s ease;
+    }
+
+    .score-progress-fill.overbudget {
+      background: #ef4444;
+    }
+
+    .card-score-box .status-text {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    /* Comparison Table Section */
+    .table-container {
+      background: var(--bg-surface);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-sm);
+      overflow-x: auto;
+      margin-top: 1rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.85rem;
+    }
+
+    th {
+      background: #f8fafc;
+      color: var(--primary-navy);
+      font-weight: 700;
+      padding: 0.85rem 1rem;
+      border-bottom: 2px solid var(--border-color);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--secondary-navy);
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr.highlight-row {
+      background-color: #f0fdf4;
+      font-weight: 600;
+    }
+
+    tr.overbudget-row td {
+      color: #94a3b8;
+    }
+
+    .table-score-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+
+    .score-high { background: #dcfce7; color: #166534; }
+    .score-med { background: #fef3c7; color: #854d0e; }
+    .score-low { background: #fee2e2; color: #991b1b; }
+
+    /* Footer & Disclaimer */
+    footer {
+      max-width: 1240px;
+      margin: 2.5rem auto 0;
+      padding: 1.5rem 1.25rem;
+      border-top: 1px solid var(--border-color);
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    .disclaimer-box {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius-sm);
+      padding: 0.85rem 1.2rem;
+      margin-bottom: 1rem;
+      text-align: left;
+      font-size: 0.78rem;
+    }
+
+    .disclaimer-box strong {
+      color: var(--primary-navy);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header>
+    <div class="nav-container">
+      <div class="brand-logo">
+        <svg viewBox="0 0 24 24">
+          <path d="M20 18c1.1 0 1.99-.9 1.99-2L22 5c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2H0c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2h-4zM4 5h16v11H4V5zm8 14c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/>
+        </svg>
+        <span>Laptop Decision Helper</span>
+      </div>
+      <div class="nav-badge">Smart Recommender Engine</div>
+    </div>
+  </header>
+
+  <!-- Hero Header -->
+  <section class="hero-banner">
+    <h1>Choose the Best Laptop for Your Budget</h1>
+    <p>Adjust your maximum price, target usage, and feature preferences. Our live scoring engine instantly ranks and identifies the best match for you.</p>
+  </section>
+
+  <!-- Main App Layout -->
+  <main class="main-layout">
+    
+    <!-- Controls / Filters Sidebar -->
+    <aside class="card-panel controls-panel">
+      <div class="panel-header">
+        <h2>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" y1="21" x2="4" y2="14"></line>
+            <line x1="4" y1="10" x2="4" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12" y2="3"></line>
+            <line x1="20" y1="21" x2="20" y2="16"></line>
+            <line x1="20" y1="12" x2="20" y2="3"></line>
+            <line x1="1" y1="14" x2="7" y2="14"></line>
+            <line x1="9" y1="8" x2="15" y2="8"></line>
+            <line x1="17" y1="16" x2="23" y2="16"></line>
+          </svg>
+          Your Preferences
+        </h2>
+        <button id="btnReset" class="btn-reset" title="Reset all controls to defaults">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+          </svg>
+          Reset
+        </button>
+      </div>
+
+      <!-- 1. Budget Slider -->
+      <div class="form-group">
+        <div class="form-label-row">
+          <label for="budgetSlider" class="form-label">Maximum Budget</label>
+          <span id="budgetDisplay" class="budget-display">₹75,000</span>
+        </div>
+        <input type="range" id="budgetSlider" min="20000" max="150000" step="2500" value="75000">
+        <div class="range-limits">
+          <span>₹20,000</span>
+          <span>₹1,50,000</span>
+        </div>
+      </div>
+
+      <!-- 2. Purpose Selection -->
+      <div class="form-group">
+        <div class="form-label-row">
+          <label class="form-label">Primary Purpose</label>
+        </div>
+        <div class="purpose-grid" id="purposeContainer">
+          <button type="button" class="purpose-btn" data-purpose="Study">
+            <span class="icon">📚</span> Study
+          </button>
+          <button type="button" class="purpose-btn active" data-purpose="Programming">
+            <span class="icon">💻</span> Programming
+          </button>
+          <button type="button" class="purpose-btn" data-purpose="Gaming">
+            <span class="icon">🎮</span> Gaming
+          </button>
+          <button type="button" class="purpose-btn" data-purpose="Business">
+            <span class="icon">💼</span> Business
+          </button>
+          <button type="button" class="purpose-btn" data-purpose="Video Editing" style="grid-column: span 2;">
+            <span class="icon">🎬</span> Video Editing / Creative
+          </button>
+        </div>
+      </div>
+
+      <!-- 3. Performance Importance -->
+      <div class="form-group">
+        <div class="form-label-row">
+          <label for="perfSlider" class="form-label">Performance Priority</label>
+          <span id="perfDisplay" class="slider-val-badge">High (8/10)</span>
+        </div>
+        <input type="range" id="perfSlider" min="1" max="10" step="1" value="8">
+        <div class="slider-hint">Speed for multitasking, code compiling, or gaming</div>
+      </div>
+
+      <!-- 4. Battery Life Importance -->
+      <div class="form-group">
+        <div class="form-label-row">
+          <label for="batterySlider" class="form-label">Battery Life Priority</label>
+          <span id="batteryDisplay" class="slider-val-badge">Medium (6/10)</span>
+        </div>
+        <input type="range" id="batterySlider" min="1" max="10" step="1" value="6">
+        <div class="slider-hint">Hours away from a wall charger</div>
+      </div>
+
+      <!-- 5. Portability Importance -->
+      <div class="form-group">
+        <div class="form-label-row">
+          <label for="portabilitySlider" class="form-label">Portability Priority</label>
+          <span id="portabilityDisplay" class="slider-val-badge">Medium (5/10)</span>
+        </div>
+        <input type="range" id="portabilitySlider" min="1" max="10" step="1" value="5">
+        <div class="slider-hint">Lightweight build & ease of carrying</div>
+      </div>
+
+    </aside>
+
+    <!-- Results Section -->
+    <section class="results-panel">
+
+      <!-- Recommended Laptop Highlight -->
+      <div id="recommendationContainer">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Live Ranked Cards Header -->
+      <div class="section-title-row">
+        <h2 class="section-title">All Ranked Options</h2>
+        <span class="sort-indicator">Dynamically ranked by suitability score</span>
+      </div>
+
+      <!-- List of Laptop Cards -->
+      <div class="cards-list" id="laptopCardsList">
+        <!-- Populated via JavaScript -->
+      </div>
+
+      <!-- Comparison Table Section -->
+      <div style="margin-top: 1.5rem;">
+        <h2 class="section-title" style="margin-bottom: 0.8rem;">Specification & Score Comparison Table</h2>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Rank & Model</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>CPU / RAM / SSD</th>
+                <th>Battery</th>
+                <th>Weight</th>
+                <th>Suitability Score</th>
+                <th>Budget Check</th>
+              </tr>
+            </thead>
+            <tbody id="comparisonTableBody">
+              <!-- Populated via JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Footer & Disclaimer -->
+  <footer>
+    <div class="disclaimer-box">
+      <strong>Notice & Illustrative Data:</strong> Laptop models, hardware specifications, and Indian Rupee (₹) prices presented above represent realistic sample data created solely for interactive decision modeling and demonstration purposes. Actual market prices, configurations, and inventory fluctuate across retailers.
+    </div>
+    <p>© 2026 Laptop Decision Helper • Built with Vanilla Web Technologies • All calculations performed client-side</p>
+  </footer>
+
+  <script>
+    /* ==========================================================================
+       SAMPLE LAPTOPS DATA
+       ========================================================================== */
+    const LAPTOPS = [
+      {
+        id: "student",
+        name: "Lenovo IdeaPad Slim 3",
+        category: "Budget Student Laptop",
+        badgeClass: "category-student",
+        price: 35000,
+        processor: "Intel Core i3 12th Gen / Ryzen 3",
+        ram: "8 GB DDR4",
+        storage: "512 GB NVMe SSD",
+        batteryHours: 7.0,
+        weightKg: 1.55,
+        display: "15.6\" FHD Anti-Glare",
+        suitableFor: "Word processing, web browsing, online classes, light office work",
+        rawRatings: {
+          performance: 5.5,   // Scale 1 to 10
+          battery: 6.8,       // 7h
+          portability: 7.2    // 1.55kg
+        },
+        purposeCompatibility: {
+          "Study": 9.5,
+          "Programming": 6.0,
+          "Gaming": 2.5,
+          "Business": 6.8,
+          "Video Editing": 3.0
+        }
+      },
+      {
+        id: "programming",
+        name: "Acer Swift Go 14 / ASUS Vivobook Pro",
+        category: "Programming Laptop",
+        badgeClass: "category-programming",
+        price: 65000,
+        processor: "Intel Core i5 13th Gen / Ryzen 5 7000",
+        ram: "16 GB LPDDR5",
+        storage: "512 GB Gen4 SSD",
+        batteryHours: 8.5,
+        weightKg: 1.40,
+        display: "14\" FHD+ IPS 100% sRGB",
+        suitableFor: "Coding, Docker containers, web development, multitasking, study",
+        rawRatings: {
+          performance: 8.0,
+          battery: 8.0,
+          portability: 8.2
+        },
+        purposeCompatibility: {
+          "Study": 8.5,
+          "Programming": 9.6,
+          "Gaming": 5.0,
+          "Business": 8.5,
+          "Video Editing": 7.0
+        }
+      },
+      {
+        id: "gaming",
+        name: "Lenovo LOQ / HP Victus 15",
+        category: "Gaming Laptop",
+        badgeClass: "category-gaming",
+        price: 82000,
+        processor: "Intel Core i7 13th Gen + RTX 4060 (6GB GPU)",
+        ram: "16 GB DDR5 (Expandable)",
+        storage: "1 TB NVMe SSD",
+        batteryHours: 4.5,
+        weightKg: 2.35,
+        display: "15.6\" FHD 144Hz IPS",
+        suitableFor: "AAA Gaming, 3D rendering, Blender, GPU acceleration, 4K video editing",
+        rawRatings: {
+          performance: 9.8,
+          battery: 4.0,
+          portability: 4.0
+        },
+        purposeCompatibility: {
+          "Study": 5.0,
+          "Programming": 8.0,
+          "Gaming": 9.9,
+          "Business": 5.0,
+          "Video Editing": 9.2
+        }
+      },
+      {
+        id: "business",
+        name: "Lenovo ThinkPad E14 / Dell Inspiron",
+        category: "Business Laptop",
+        badgeClass: "category-business",
+        price: 58000,
+        processor: "Intel Core i5 13th Gen vPro",
+        ram: "16 GB DDR4",
+        storage: "512 GB SSD",
+        batteryHours: 10.0,
+        weightKg: 1.38,
+        display: "14\" WUXGA Matte, Fingerprint reader",
+        suitableFor: "Spreadsheets, executive travel, client meetings, security, all-day work",
+        rawRatings: {
+          performance: 7.2,
+          battery: 9.2,
+          portability: 8.6
+        },
+        purposeCompatibility: {
+          "Study": 8.0,
+          "Programming": 8.2,
+          "Gaming": 3.0,
+          "Business": 9.8,
+          "Video Editing": 5.5
+        }
+      },
+      {
+        id: "premium",
+        name: "Apple MacBook Air M2 / Dell XPS 13",
+        category: "Premium Performance Laptop",
+        badgeClass: "category-premium",
+        price: 115000,
+        processor: "Apple Silicon M2 / Intel Core Ultra 7",
+        ram: "16 GB Unified Memory",
+        storage: "1 TB High-Speed SSD",
+        batteryHours: 14.5,
+        weightKg: 1.24,
+        display: "13.6\" Liquid Retina / OLED Ultra-thin",
+        suitableFor: "Heavy creative production, ultra-portable development, executive use",
+        rawRatings: {
+          performance: 9.2,
+          battery: 9.8,
+          portability: 9.7
+        },
+        purposeCompatibility: {
+          "Study": 8.5,
+          "Programming": 9.2,
+          "Gaming": 5.0,
+          "Business": 9.2,
+          "Video Editing": 9.0
+        }
+      }
+    ];
+
+    /* ==========================================================================
+       APPLICATION STATE
+       ========================================================================== */
+    const DEFAULT_STATE = {
+      budget: 75000,
+      purpose: "Programming",
+      perfWeight: 8,
+      batteryWeight: 6,
+      portabilityWeight: 5
+    };
+
+    let state = { ...DEFAULT_STATE };
+
+    /* ==========================================================================
+       DOM ELEMENTS
+       ========================================================================== */
+    const budgetSlider = document.getElementById("budgetSlider");
+    const budgetDisplay = document.getElementById("budgetDisplay");
+    const perfSlider = document.getElementById("perfSlider");
+    const perfDisplay = document.getElementById("perfDisplay");
+    const batterySlider = document.getElementById("batterySlider");
+    const batteryDisplay = document.getElementById("batteryDisplay");
+    const portabilitySlider = document.getElementById("portabilitySlider");
+    const portabilityDisplay = document.getElementById("portabilityDisplay");
+    const purposeContainer = document.getElementById("purposeContainer");
+    const btnReset = document.getElementById("btnReset");
+    const recommendationContainer = document.getElementById("recommendationContainer");
+    const laptopCardsList = document.getElementById("laptopCardsList");
+    const comparisonTableBody = document.getElementById("comparisonTableBody");
+
+    /* ==========================================================================
+       FORMATTERS & HELPERS
+       ========================================================================== */
+    function formatINR(amount) {
+      return new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+        maximumFractionDigits: 0
+      }).format(amount);
+    }
+
+    function getPriorityLabel(val) {
+      if (val <= 3) return `Low (${val}/10)`;
+      if (val <= 6) return `Medium (${val}/10)`;
+      if (val <= 8) return `High (${val}/10)`;
+      return `Critical (${val}/10)`;
+    }
+
+    /* ==========================================================================
+       SCORING ENGINE
+       Calculates a normalized score (0 to 100) based on:
+       1. Purpose match (weight: 35%)
+       2. Weighted feature preferences (Performance, Battery, Portability) (weight: 45%)
+       3. Budget value-for-money incentive within budget (weight: 20%)
+       Rule: If price > user budget, marked as isOverBudget. Over-budget laptops
+       cannot be recommended as the top choice.
+       ========================================================================== */
+    function evaluateLaptops() {
+      const { budget, purpose, perfWeight, batteryWeight, portabilityWeight } = state;
+
+      const scoredList = LAPTOPS.map(laptop => {
+        const isOverBudget = laptop.price > budget;
+
+        // 1. Purpose Compatibility (10-point scale -> normalized 0 to 1)
+        const purposeScore = (laptop.purposeCompatibility[purpose] || 5.0) / 10.0;
+
+        // 2. User Weights preference (Normalized)
+        const sumWeights = perfWeight + batteryWeight + portabilityWeight;
+        const normPerfW = perfWeight / sumWeights;
+        const normBattW = batteryWeight / sumWeights;
+        const normPortW = portabilityWeight / sumWeights;
+
+        const featureScore = (
+          (laptop.rawRatings.performance / 10.0) * normPerfW +
+          (laptop.rawRatings.battery / 10.0) * normBattW +
+          (laptop.rawRatings.portability / 10.0) * normPortW
+        );
+
+        // 3. Budget Compatibility factor
+        // Laptops comfortably below user's budget get a bonus for value,
+        // while over-budget laptops receive 0 for budget bonus.
+        let budgetFactor = 0;
+        if (!isOverBudget) {
+          // If price is within budget, ratio of price to budget:
+          // A laptop that costs 80-95% of budget maximizes utilization,
+          // while cheaper ones still score solidly.
+          const utilization = laptop.price / budget;
+          budgetFactor = 0.75 + (utilization * 0.25); // Range 0.75 to 1.0
+        }
+
+        // Composite Weighted Score (0 to 100)
+        let composite = 0;
+        if (isOverBudget) {
+          // Severely penalize over-budget score to make sure it doesn't rank above viable ones
+          const raw = (purposeScore * 0.5 + featureScore * 0.5) * 60;
+          composite = Math.max(15, Math.round(raw));
+        } else {
+          const raw = (purposeScore * 0.40 + featureScore * 0.45 + budgetFactor * 0.15) * 100;
+          composite = Math.min(99, Math.max(30, Math.round(raw)));
+        }
+
+        // Generate tailored explanation for this laptop given the active criteria
+        const reasoning = generateExplanation(laptop, isOverBudget, purpose);
+
+        return {
+          ...laptop,
+          isOverBudget,
+          finalScore: composite,
+          reasoning
+        };
+      });
+
+      // Sort: In-budget laptops first sorted by score descending, then over-budget sorted by score
+      scoredList.sort((a, b) => {
+        if (!a.isOverBudget && b.isOverBudget) return -1;
+        if (a.isOverBudget && !b.isOverBudget) return 1;
+        return b.finalScore - a.finalScore;
+      });
+
+      return scoredList;
+    }
+
+    function generateExplanation(laptop, isOverBudget, currentPurpose) {
+      if (isOverBudget) {
+        return `Exceeds your set budget of ${formatINR(state.budget)} by ${formatINR(laptop.price - state.budget)}. Increase budget to make this viable.`;
+      }
+
+      const reasons = [];
+      if (laptop.purposeCompatibility[currentPurpose] >= 8.5) {
+        reasons.push(`specifically engineered for <strong>${currentPurpose}</strong> workloads`);
+      }
+      if (state.perfWeight >= 7 && laptop.rawRatings.performance >= 8.0) {
+        reasons.push(`delivers high performance (${laptop.processor}) meeting your top priority`);
+      }
+      if (state.batteryWeight >= 7 && laptop.batteryHours >= 8.0) {
+        reasons.push(`offers dependable ${laptop.batteryHours}h battery life`);
+      }
+      if (state.portabilityWeight >= 7 && laptop.weightKg <= 1.45) {
+        reasons.push(`featherweight body at only ${laptop.weightKg} kg`);
+      }
+
+      if (reasons.length === 0) {
+        return `Balanced option fitting comfortably within your ${formatINR(state.budget)} budget for everyday tasks.`;
+      }
+
+      return `Top match because it is ${reasons.join(", and ")}.`;
+    }
+
+    /* ==========================================================================
+       RENDER FUNCTIONS
+       ========================================================================== */
+    function render() {
+      // 1. Update Controls Display
+      budgetDisplay.textContent = formatINR(state.budget);
+      budgetSlider.value = state.budget;
+
+      perfSlider.value = state.perfWeight;
+      perfDisplay.textContent = getPriorityLabel(state.perfWeight);
+
+      batterySlider.value = state.batteryWeight;
+      batteryDisplay.textContent = getPriorityLabel(state.batteryWeight);
+
+      portabilitySlider.value = state.portabilityWeight;
+      portabilityDisplay.textContent = getPriorityLabel(state.portabilityWeight);
+
+      // Purpose Buttons active state
+      const purposeButtons = purposeContainer.querySelectorAll(".purpose-btn");
+      purposeButtons.forEach(btn => {
+        if (btn.getAttribute("data-purpose") === state.purpose) {
+          btn.classList.add("active");
+        } else {
+          btn.classList.remove("active");
+        }
+      });
+
+      // 2. Run Evaluation
+      const rankedLaptops = evaluateLaptops();
+
+      // Check if ANY laptop is within budget
+      const bestMatch = rankedLaptops.find(l => !l.isOverBudget);
+
+      // 3. Render Recommendation Banner
+      if (bestMatch) {
+        recommendationContainer.innerHTML = `
+          <div class="recommended-banner">
+            <div class="rec-top-row">
+              <span class="rec-tag">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                </svg>
+                Top Recommended Match
+              </span>
+              <div class="rec-score-pill">
+                Match Score: <strong>${bestMatch.finalScore}/100</strong>
+              </div>
+            </div>
+
+            <h3 class="rec-title">${bestMatch.name}</h3>
+            <div class="rec-price">${formatINR(bestMatch.price)} <span style="font-size:0.82rem; font-weight:normal; color:#cbd5e1;">(Within your budget)</span></div>
+
+            <div class="rec-specs-grid">
+              <div class="spec-item">
+                <span class="label">Processor</span>
+                <span class="val">${bestMatch.processor}</span>
+              </div>
+              <div class="spec-item">
+                <span class="label">Memory & Storage</span>
+                <span class="val">${bestMatch.ram} | ${bestMatch.storage}</span>
+              </div>
+              <div class="spec-item">
+                <span class="label">Battery Runtime</span>
+                <span class="val">~${bestMatch.batteryHours} Hours</span>
+              </div>
+              <div class="spec-item">
+                <span class="label">Weight</span>
+                <span class="val">${bestMatch.weightKg} kg</span>
+              </div>
+            </div>
+
+            <div class="rec-explanation">
+              💡 <strong>Why this laptop?</strong> ${bestMatch.reasoning}
+            </div>
+          </div>
+        `;
+      } else {
+        // Fallback when ALL laptops are above current budget
+        const lowestPriced = [...LAPTOPS].sort((a,b) => a.price - b.price)[0];
+        recommendationContainer.innerHTML = `
+          <div class="over-budget-warning">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
+            <div>
+              <strong>No laptop found within your current budget of ${formatINR(state.budget)}.</strong>
+              <div style="font-size: 0.86rem; margin-top: 4px; color: #7f1d1d;">
+                The entry-level <strong>${lowestPriced.name}</strong> starts at <strong>${formatINR(lowestPriced.price)}</strong>. Please slide your budget to at least ${formatINR(lowestPriced.price)} to unlock recommendations.
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // 4. Render Ranked Laptop Cards
+      laptopCardsList.innerHTML = rankedLaptops.map((laptop, index) => {
+        const isTop = (bestMatch && laptop.id === bestMatch.id);
+        const cardClass = [
+          "laptop-card",
+          isTop ? "top-ranked" : "",
+          laptop.isOverBudget ? "disqualified" : ""
+        ].filter(Boolean).join(" ");
+
+        const budgetStatusPill = laptop.isOverBudget
+          ? `<span class="budget-status-pill budget-exceeded">Over Budget (+${formatINR(laptop.price - state.budget)})</span>`
+          : `<span class="budget-status-pill budget-ok">✓ In Budget</span>`;
+
+        return `
+          <div class="${cardClass}">
+            <div>
+              <div class="card-meta-top">
+                <span class="rank-pill">#${index + 1} Ranked</span>
+                <span class="category-badge ${laptop.badgeClass}">${laptop.category}</span>
+                ${budgetStatusPill}
+              </div>
+
+              <h3 class="laptop-name">${laptop.name}</h3>
+              <div class="laptop-price">${formatINR(laptop.price)}</div>
+
+              <div class="specs-chips">
+                <span class="spec-chip">⚙️ ${laptop.processor}</span>
+                <span class="spec-chip">🧠 ${laptop.ram}</span>
+                <span class="spec-chip">💾 ${laptop.storage}</span>
+                <span class="spec-chip">🔋 ${laptop.batteryHours} hrs</span>
+                <span class="spec-chip">⚖️ ${laptop.weightKg} kg</span>
+                <span class="spec-chip">🖥️ ${laptop.display}</span>
+              </div>
+
+              <div class="laptop-usage-hint">
+                <strong>Best For:</strong> ${laptop.suitableFor}
+              </div>
+            </div>
+
+            <!-- Score breakdown column -->
+            <div class="card-score-box">
+              <div class="score-number">${laptop.isOverBudget ? '<span style="font-size:1.4rem; color:var(--danger-red);">N/A</span>' : laptop.finalScore}</div>
+              <div class="score-out-of">${laptop.isOverBudget ? 'Over Budget' : 'Suitability Score / 100'}</div>
+              <div class="score-progress-bar">
+                <div class="score-progress-fill ${laptop.isOverBudget ? 'overbudget' : ''}" style="width: ${laptop.isOverBudget ? 100 : laptop.finalScore}%"></div>
+              </div>
+              <div class="status-text">
+                ${laptop.isOverBudget ? 'Exceeds budget ceiling' : (isTop ? '🏆 Top Selection' : 'Alternative Option')}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      // 5. Render Comparison Table
+      comparisonTableBody.innerHTML = rankedLaptops.map((laptop, index) => {
+        const isTop = (bestMatch && laptop.id === bestMatch.id);
+        const rowClass = isTop ? "highlight-row" : (laptop.isOverBudget ? "overbudget-row" : "");
+
+        let scoreBadgeClass = "score-med";
+        if (laptop.finalScore >= 80) scoreBadgeClass = "score-high";
+        else if (laptop.finalScore < 60) scoreBadgeClass = "score-low";
+
+        return `
+          <tr class="${rowClass}">
+            <td>
+              <strong>#${index + 1} ${laptop.name}</strong>
+              ${isTop ? '<span style="color:#15803d; font-size:0.75rem; margin-left:4px;">★ Top</span>' : ''}
+            </td>
+            <td><span class="category-badge ${laptop.badgeClass}">${laptop.category}</span></td>
+            <td><strong>${formatINR(laptop.price)}</strong></td>
+            <td>${laptop.processor} / ${laptop.ram} / ${laptop.storage}</td>
+            <td>${laptop.batteryHours} hrs</td>
+            <td>${laptop.weightKg} kg</td>
+            <td>
+              <span class="table-score-badge ${scoreBadgeClass}">
+                ${laptop.isOverBudget ? `${laptop.finalScore} (Capped)` : `${laptop.finalScore} / 100`}
+              </span>
+            </td>
+            <td>
+              ${laptop.isOverBudget 
+                ? '<span style="color:var(--danger-red); font-weight:700;">Over Budget</span>' 
+                : '<span style="color:var(--success-green); font-weight:700;">Within Budget</span>'}
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    /* ==========================================================================
+       EVENT LISTENERS & BINDINGS
+       ========================================================================== */
+    budgetSlider.addEventListener("input", (e) => {
+      state.budget = parseInt(e.target.value, 10);
+      render();
+    });
+
+    perfSlider.addEventListener("input", (e) => {
+      state.perfWeight = parseInt(e.target.value, 10);
+      render();
+    });
+
+    batterySlider.addEventListener("input", (e) => {
+      state.batteryWeight = parseInt(e.target.value, 10);
+      render();
+    });
+
+    portabilitySlider.addEventListener("input", (e) => {
+      state.portabilityWeight = parseInt(e.target.value, 10);
+      render();
+    });
+
+    // Purpose chip button delegation
+    purposeContainer.addEventListener("click", (e) => {
+      const btn = e.target.closest(".purpose-btn");
+      if (!btn) return;
+      const selectedPurpose = btn.getAttribute("data-purpose");
+      if (selectedPurpose) {
+        state.purpose = selectedPurpose;
+        render();
+      }
+    });
+
+    // Reset button
+    btnReset.addEventListener("click", () => {
+      state = { ...DEFAULT_STATE };
+      render();
+    });
+
+    // Initial render on document ready
+    window.addEventListener("DOMContentLoaded", () => {
+      render();
+    });
+  </script>
+</body>
+</html>

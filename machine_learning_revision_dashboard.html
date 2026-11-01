@@ -1,0 +1,2357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Machine Learning Revision Dashboard (BCA Exams)</title>
+  <style>
+    :root {
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-card: #24324a;
+      --bg-card-hover: #2b3d5b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --accent: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.25);
+      --accent-purple: #a855f7;
+      --success: #22c55e;
+      --success-bg: rgba(34, 197, 94, 0.15);
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --danger-bg: rgba(239, 68, 68, 0.15);
+      --border-color: #334155;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-family);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Layout */
+    .sidebar {
+      width: 260px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 100;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar-brand {
+      padding: 1.5rem 1.25rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, #38bdf8, #6366f1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: #fff;
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    .brand-text h2 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-text span {
+      font-size: 0.72rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    .nav-menu {
+      list-style: none;
+      padding: 1.25rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.92rem;
+      font-weight: 500;
+      transition: var(--transition);
+      border: 1px solid transparent;
+    }
+
+    .nav-item:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .nav-item.active {
+      color: var(--accent);
+      background: rgba(56, 189, 248, 0.12);
+      border-color: rgba(56, 189, 248, 0.25);
+    }
+
+    .nav-icon {
+      font-size: 1.15rem;
+      width: 22px;
+      display: inline-flex;
+      justify-content: center;
+    }
+
+    .sidebar-footer {
+      padding: 1rem 1.25rem;
+      border-top: 1px solid var(--border-color);
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+
+    .btn-reset-session {
+      width: 100%;
+      background: transparent;
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-radius: var(--radius-sm);
+      padding: 9px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: var(--transition);
+    }
+
+    .btn-reset-session:hover {
+      background: var(--danger-bg);
+      border-color: var(--danger);
+    }
+
+    /* Main Content */
+    .main-wrap {
+      margin-left: 260px;
+      flex: 1;
+      padding: 1.75rem 2rem;
+      max-width: 1350px;
+      width: calc(100% - 260px);
+    }
+
+    /* Mobile Header */
+    .mobile-header {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .menu-toggle {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+
+    /* Header Banner */
+    .header-banner {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(36, 50, 74, 0.8));
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 1.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+    }
+
+    .header-info h1 {
+      font-size: 1.55rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 0.25rem;
+    }
+
+    .header-info p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .exam-tag {
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: var(--accent);
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: inline-block;
+      margin-top: 6px;
+    }
+
+    /* Overall Stats Card Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .stat-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      position: relative;
+      overflow: hidden;
+      transition: var(--transition);
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    .stat-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .stat-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .stat-icon {
+      font-size: 1.2rem;
+      opacity: 0.85;
+    }
+
+    .stat-value {
+      font-size: 1.85rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.4rem;
+    }
+
+    .stat-subtext {
+      font-size: 0.76rem;
+      color: var(--text-dim);
+    }
+
+    /* Progress bar in header */
+    .progress-section {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .progress-label-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.6rem;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 12px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #38bdf8, #22c55e);
+      width: 0%;
+      border-radius: 999px;
+      transition: width 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Section Headers */
+    .section-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 1rem;
+    }
+
+    /* Filters Bar */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+    }
+
+    .filter-btn {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 7px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.84rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .filter-btn:hover {
+      background: var(--bg-card);
+      color: var(--text-main);
+    }
+
+    .filter-btn.active {
+      background: var(--accent);
+      color: #0f172a;
+      border-color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* Two column grid for Topics & Timer */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 1024px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Topic Checklist Cards */
+    .topic-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .topic-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.15rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: var(--transition);
+      cursor: pointer;
+    }
+
+    .topic-card:hover {
+      background: var(--bg-card);
+      border-color: rgba(56, 189, 248, 0.35);
+      transform: translateX(3px);
+    }
+
+    .topic-card.completed {
+      border-left: 4px solid var(--success);
+      background: rgba(34, 197, 94, 0.05);
+    }
+
+    .topic-card-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex: 1;
+    }
+
+    .custom-checkbox {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      border: 2px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .topic-card.completed .custom-checkbox {
+      background: var(--success);
+      border-color: var(--success);
+    }
+
+    .custom-checkbox svg {
+      display: none;
+      width: 13px;
+      height: 13px;
+      fill: none;
+      stroke: #fff;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .topic-card.completed .custom-checkbox svg {
+      display: block;
+    }
+
+    .topic-info h3 {
+      font-size: 0.98rem;
+      font-weight: 600;
+      margin-bottom: 2px;
+      transition: var(--transition);
+    }
+
+    .topic-card.completed .topic-info h3 {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .topic-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-right: 6px;
+    }
+
+    .badge-sup { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+    .badge-unsup { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
+    .badge-dim { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+
+    .topic-card-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-action-icon {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: var(--transition);
+    }
+
+    .btn-action-icon:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: rgba(56, 189, 248, 0.1);
+    }
+
+    /* Study Timer Sidecard */
+    .timer-container {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: sticky;
+      top: 1.5rem;
+    }
+
+    .timer-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .timer-header h3 {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .timer-badge {
+      font-size: 0.72rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .timer-circle-wrap {
+      position: relative;
+      width: 170px;
+      height: 170px;
+      margin: 0.5rem 0 1.25rem 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .timer-display {
+      font-size: 2.3rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-main);
+    }
+
+    .timer-status {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 2px;
+    }
+
+    .preset-buttons {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 1.25rem;
+    }
+
+    .preset-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .preset-btn.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(56, 189, 248, 0.1);
+    }
+
+    .timer-controls {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .btn-timer {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-start {
+      background: var(--accent);
+      color: #0f172a;
+    }
+    .btn-start:hover {
+      box-shadow: 0 0 15px var(--accent-glow);
+      filter: brightness(1.08);
+    }
+
+    .btn-pause {
+      background: var(--warning);
+      color: #0f172a;
+    }
+
+    .btn-timer-reset {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-timer-reset:hover {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    /* Flashcards Section */
+    .flashcard-section {
+      margin-bottom: 2rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+    }
+
+    .flashcard-header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .flashcard-container {
+      perspective: 1200px;
+      max-width: 650px;
+      margin: 0 auto 1.25rem auto;
+      height: 280px;
+    }
+
+    .flashcard {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+    }
+
+    .flashcard.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: var(--radius-md);
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .card-front {
+      background: linear-gradient(145deg, #1e293b, #24324a);
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+
+    .card-back {
+      background: linear-gradient(145deg, #1e293b, #1b2e4b);
+      border-color: rgba(168, 85, 247, 0.3);
+      transform: rotateY(180deg);
+      overflow-y: auto;
+    }
+
+    .card-tag {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .card-center-text {
+      text-align: center;
+      margin: auto 0;
+    }
+
+    .card-center-text h4 {
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-center-text p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .card-back-content {
+      margin: auto 0;
+    }
+
+    .card-back-content h5 {
+      color: var(--accent-purple);
+      font-size: 1.05rem;
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+
+    .card-back-content p {
+      font-size: 0.88rem;
+      color: #e2e8f0;
+      line-height: 1.45;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-back-content ul {
+      margin-left: 1.2rem;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .card-prompt-hint {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      text-align: center;
+      font-style: italic;
+    }
+
+    .flashcard-nav-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .btn-fc-nav {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 8px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-fc-nav:hover:not(:disabled) {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(56, 189, 248, 0.1);
+    }
+
+    .btn-fc-nav:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-flip-card {
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      color: #0f172a;
+      font-weight: 700;
+      border: none;
+      padding: 8px 22px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-flip-card:hover {
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    /* Quiz Section */
+    .quiz-section {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .quiz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .quiz-question-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.35rem;
+      margin-bottom: 1rem;
+    }
+
+    .quiz-q-num {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.4rem;
+    }
+
+    .quiz-q-text {
+      font-size: 1.02rem;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.45;
+      margin-bottom: 1rem;
+    }
+
+    .quiz-options-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .quiz-opt-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 0.88rem;
+      color: var(--text-main);
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: var(--transition);
+    }
+
+    .quiz-opt-btn:hover:not(.locked) {
+      background: rgba(56, 189, 248, 0.08);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    .quiz-opt-btn.selected {
+      border-color: var(--accent);
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .quiz-opt-btn.correct {
+      background: rgba(34, 197, 94, 0.2) !important;
+      border-color: var(--success) !important;
+      color: #86efac !important;
+      font-weight: 600;
+    }
+
+    .quiz-opt-btn.wrong {
+      background: rgba(239, 68, 68, 0.2) !important;
+      border-color: var(--danger) !important;
+      color: #fca5a5 !important;
+      font-weight: 600;
+    }
+
+    .opt-letter {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.78rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .quiz-feedback-box {
+      margin-top: 1rem;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      line-height: 1.4;
+      display: none;
+    }
+
+    .feedback-correct {
+      background: var(--success-bg);
+      border: 1px solid rgba(34, 197, 94, 0.4);
+      color: #86efac;
+    }
+
+    .feedback-wrong {
+      background: var(--danger-bg);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+    }
+
+    .quiz-bottom-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1.25rem;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .quiz-results-banner {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      text-align: center;
+      display: none;
+    }
+
+    .quiz-results-banner h3 {
+      font-size: 1.35rem;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+
+    .quiz-results-banner p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 1.25rem;
+    }
+
+    /* Modal for Topic Detail Study Notes */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .modal-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 680px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      animation: modalSlide 0.25s ease-out;
+    }
+
+    @keyframes modalSlide {
+      from { transform: translateY(15px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.4rem;
+      cursor: pointer;
+      transition: var(--transition);
+      line-height: 1;
+    }
+
+    .modal-close:hover {
+      color: #fff;
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+      overflow-y: auto;
+      font-size: 0.9rem;
+      line-height: 1.55;
+      color: #cbd5e1;
+    }
+
+    .modal-section-title {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      margin: 1rem 0 0.4rem 0;
+    }
+
+    .modal-section-title:first-child {
+      margin-top: 0;
+    }
+
+    .modal-formula-box {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-family: 'Courier New', Courier, monospace;
+      color: #7dd3fc;
+      margin: 0.5rem 0;
+      font-size: 0.9rem;
+    }
+
+    .modal-pros-cons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 0.75rem 0;
+    }
+
+    @media (max-width: 560px) {
+      .modal-pros-cons {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .pros-box, .cons-box {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+    }
+
+    .pros-box h6 { color: #86efac; margin-bottom: 4px; font-size: 0.8rem; }
+    .cons-box h6 { color: #fca5a5; margin-bottom: 4px; font-size: 0.8rem; }
+
+    .modal-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    /* Notification toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--accent);
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-weight: 500;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      z-index: 1000;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .main-wrap {
+        margin-left: 0;
+        width: 100%;
+        padding: 1.25rem 1rem;
+      }
+
+      .mobile-header {
+        display: flex;
+      }
+
+      .header-banner {
+        padding: 1.25rem;
+      }
+
+      .header-info h1 {
+        font-size: 1.3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">ML</div>
+      <div class="brand-text">
+        <h2>BCA Prep Hub</h2>
+        <span>Machine Learning</span>
+      </div>
+    </div>
+
+    <ul class="nav-menu">
+      <li class="nav-item active" onclick="scrollToSection('section-checklist')">
+        <span class="nav-icon">📋</span> Checklist & Topics
+      </li>
+      <li class="nav-item" onclick="scrollToSection('section-timer')">
+        <span class="nav-icon">⏱️</span> Study Timer
+      </li>
+      <li class="nav-item" onclick="scrollToSection('section-flashcards')">
+        <span class="nav-icon">💡</span> Flashcards
+      </li>
+      <li class="nav-item" onclick="scrollToSection('section-quiz')">
+        <span class="nav-icon">📝</span> Practice Quiz (10 Qs)
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <button class="btn-reset-session" id="btn-reset-all" title="Reset all checklist progress and quiz answers">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+        Reset Study Session
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Wrap -->
+  <main class="main-wrap">
+    
+    <!-- Mobile top bar -->
+    <div class="mobile-header">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div class="brand-icon" style="width:32px; height:32px; font-size:1rem;">ML</div>
+        <strong style="font-size: 1rem;">ML Revision Dashboard</strong>
+      </div>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">☰</button>
+    </div>
+
+    <!-- Header Banner -->
+    <header class="header-banner">
+      <div class="header-info">
+        <h1>Machine Learning Revision Dashboard</h1>
+        <p>BCA University Exam Preparation &middot; Core Algorithms & Foundational Concepts</p>
+        <span class="exam-tag">Target: University Semester Exam</span>
+      </div>
+      <div>
+        <button class="btn-timer btn-start" onclick="quickJumpToQuiz()" style="font-size: 0.85rem; padding: 8px 16px;">
+          ⚡ Jump to 10-Q Quiz
+        </button>
+      </div>
+    </header>
+
+    <!-- Stats Grid (Feature 1) -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-card-header">
+          <span class="stat-title">Total Topics</span>
+          <span class="stat-icon">📚</span>
+        </div>
+        <div class="stat-value" id="stat-total">8</div>
+        <div class="stat-subtext">Core BCA Curriculum Modules</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-card-header">
+          <span class="stat-title">Completed</span>
+          <span class="stat-icon">✅</span>
+        </div>
+        <div class="stat-value" style="color: #4ade80;" id="stat-completed">0</div>
+        <div class="stat-subtext">Marked revised & tested</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-card-header">
+          <span class="stat-title">Remaining</span>
+          <span class="stat-icon">⏳</span>
+        </div>
+        <div class="stat-value" style="color: #fca5a5;" id="stat-remaining">8</div>
+        <div class="stat-subtext">Pending revision topics</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-card-header">
+          <span class="stat-title">Revision Progress</span>
+          <span class="stat-icon">📈</span>
+        </div>
+        <div class="stat-value" style="color: var(--accent);" id="stat-percent">0%</div>
+        <div class="stat-subtext">Calculated checklist ratio</div>
+      </div>
+    </div>
+
+    <!-- Overall Dynamic Progress Bar (Feature 7) -->
+    <div class="progress-section">
+      <div class="progress-label-row">
+        <span>Syllabus Completion Readiness</span>
+        <span id="progress-percentage-text">0% Complete</span>
+      </div>
+      <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+        <div class="progress-fill" id="overall-progress-fill"></div>
+      </div>
+    </div>
+
+    <!-- Main Content 2-Column: Checklist/Topics + Timer -->
+    <div class="content-grid" id="section-checklist">
+      
+      <!-- Topics & Checklist Column (Features 2, 6, 7) -->
+      <div>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 0.75rem;">
+          <h2 class="section-title">
+            <span>🎯</span> Topic Checklist & Notes
+          </h2>
+        </div>
+
+        <!-- Filter Bar (Feature 6) -->
+        <div class="filter-bar" id="filter-container">
+          <button class="filter-btn active" data-filter="all">All Topics (8)</button>
+          <button class="filter-btn" data-filter="supervised">Supervised (4)</button>
+          <button class="filter-btn" data-filter="unsupervised">Unsupervised (3)</button>
+          <button class="filter-btn" data-filter="dim-reduction">Dimensionality Reduction (1)</button>
+        </div>
+
+        <!-- Interactive Checklist (Feature 2) -->
+        <div class="topic-list" id="topic-list-container">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+
+      <!-- Timer Column (Feature 3) -->
+      <div id="section-timer">
+        <div class="timer-container">
+          <div class="timer-header">
+            <h3>Focus Study Timer</h3>
+            <span class="timer-badge" id="timer-mode-label">Pomodoro</span>
+          </div>
+
+          <!-- Time Presets -->
+          <div class="preset-buttons">
+            <button class="preset-btn" onclick="setTimerDuration(15)">15 Min</button>
+            <button class="preset-btn active" onclick="setTimerDuration(25)">25 Min</button>
+            <button class="preset-btn" onclick="setTimerDuration(45)">45 Min</button>
+          </div>
+
+          <div class="timer-circle-wrap">
+            <div>
+              <div class="timer-display" id="timer-display">25:00</div>
+              <div class="timer-status" id="timer-status-text">Ready to study</div>
+            </div>
+          </div>
+
+          <!-- Timer Controls -->
+          <div class="timer-controls">
+            <button class="btn-timer btn-start" id="btn-timer-toggle" onclick="toggleTimer()">
+              ▶ Start
+            </button>
+            <button class="btn-timer btn-timer-reset" onclick="resetTimer()">
+              ↺ Reset
+            </button>
+          </div>
+
+          <p style="font-size: 0.76rem; color: var(--text-dim); margin-top: 1rem;">
+            Tip: Use 25-minute sprints to revise each algorithm thoroughly without burnout.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flashcards Section (Feature 4) -->
+    <section class="flashcard-section" id="section-flashcards">
+      <div class="flashcard-header-bar">
+        <div>
+          <h2 class="section-title" style="margin-bottom: 2px;">
+            <span>💡</span> Interactive ML Flashcards
+          </h2>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">Quick-recall cards for rapid BCA viva and exam definition checks</p>
+        </div>
+        <span style="font-size: 0.85rem; color: var(--accent); font-weight: 600;" id="fc-counter">Card 1 / 8</span>
+      </div>
+
+      <div class="flashcard-container" onclick="flipFlashcard()">
+        <div class="flashcard" id="flashcard-element">
+          <!-- Front Face -->
+          <div class="card-face card-front">
+            <span class="card-tag" id="fc-category-badge">SUPERVISED LEARNING</span>
+            <div class="card-center-text">
+              <h4 id="fc-front-title">Linear Regression</h4>
+              <p id="fc-front-sub">Tap card or use "Flip Card" to reveal key exam concepts</p>
+            </div>
+            <div class="card-prompt-hint">🔄 Click anywhere on this card to flip</div>
+          </div>
+
+          <!-- Back Face -->
+          <div class="card-face card-back">
+            <span class="card-tag" style="color: var(--accent-purple);">BCA EXAM SUMMARY</span>
+            <div class="card-back-content">
+              <h5 id="fc-back-title">Core Definition</h5>
+              <p id="fc-back-definition">Definition goes here...</p>
+              <ul id="fc-back-bulletpoints">
+                <li>Key point 1</li>
+              </ul>
+            </div>
+            <div class="card-prompt-hint">🔄 Click to return to front</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Flashcard Controls -->
+      <div class="flashcard-nav-row">
+        <button class="btn-fc-nav" id="btn-fc-prev" onclick="prevFlashcard()">← Prev</button>
+        <button class="btn-flip-card" onclick="flipFlashcard()">Flip Card</button>
+        <button class="btn-fc-nav" id="btn-fc-next" onclick="nextFlashcard()">Next →</button>
+      </div>
+    </section>
+
+    <!-- Quiz Section (Feature 5) -->
+    <section class="quiz-section" id="section-quiz">
+      <div class="quiz-header">
+        <div>
+          <h2 class="section-title" style="margin-bottom: 2px;">
+            <span>📝</span> Machine Learning Revision Quiz
+          </h2>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">10 Scored Multiple-Choice Questions covering all key algorithms</p>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <span style="font-size: 0.82rem; background: rgba(255,255,255,0.06); padding: 5px 10px; border-radius: 6px; color: var(--text-muted);" id="quiz-progress-text">
+            Question 1 of 10
+          </span>
+          <span style="font-size: 0.82rem; background: rgba(56,189,248,0.15); color: var(--accent); padding: 5px 10px; border-radius: 6px; font-weight: 700;" id="quiz-live-score">
+            Score: 0/10
+          </span>
+        </div>
+      </div>
+
+      <!-- Active Question Box -->
+      <div id="quiz-active-container">
+        <div class="quiz-question-box">
+          <div class="quiz-q-num" id="quiz-topic-indicator">TOPIC: SUPERVISED LEARNING</div>
+          <div class="quiz-q-text" id="quiz-question-text">Question text is loading...</div>
+          <div class="quiz-options-list" id="quiz-options-list">
+            <!-- Populated via JS -->
+          </div>
+          <div class="quiz-feedback-box" id="quiz-feedback-box"></div>
+        </div>
+
+        <div class="quiz-bottom-controls">
+          <button class="btn-fc-nav" id="btn-quiz-prev" onclick="prevQuestion()" style="visibility: hidden;">
+            ← Previous Question
+          </button>
+          <button class="btn-timer btn-start" id="btn-quiz-next" onclick="nextQuestion()" style="flex: initial; padding: 8px 22px;">
+            Next Question →
+          </button>
+        </div>
+      </div>
+
+      <!-- Quiz Final Results Banner -->
+      <div class="quiz-results-banner" id="quiz-results-banner">
+        <h3>🎉 Quiz Completed!</h3>
+        <p id="quiz-final-score-statement">You scored 0 out of 10.</p>
+        <button class="btn-timer btn-start" onclick="restartQuiz()" style="max-width: 220px; margin: 0 auto;">
+          ↺ Retake Quiz
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Detailed Exam Notes Modal (Feature 9) -->
+  <div class="modal-overlay" id="notesModal" onclick="closeModalOnBackdrop(event)">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modalTopicTitle">Algorithm Name</h3>
+        <button class="modal-close" onclick="closeModal()" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body" id="modalTopicBody">
+        <!-- Injected via JS -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn-timer btn-timer-reset" onclick="closeModal()">Close</button>
+        <button class="btn-timer btn-start" id="modalToggleCompleteBtn" onclick="toggleCurrentModalTopic()">
+          Mark as Completed
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div class="toast" id="toastMessage">
+    <span id="toastIcon">ℹ️</span>
+    <span id="toastText">Action notification</span>
+  </div>
+
+  <script>
+    /* =========================================================================
+       1. DATA STRUCTURES: 8 CORE BCA MACHINE LEARNING TOPICS
+       ========================================================================= */
+    const ML_TOPICS = [
+      {
+        id: "supervised",
+        name: "Supervised Learning",
+        category: "supervised",
+        categoryLabel: "Supervised",
+        badgeClass: "badge-sup",
+        tagline: "Learning with labeled ground-truth targets (y = f(x))",
+        definition: "A type of machine learning where the algorithm is trained on input-output pairs. The system learns a mapping function from input features (X) to desired labeled outputs (y).",
+        keyPoints: [
+          "Requires labeled dataset (features + ground truth target)",
+          "Two primary tasks: Classification (discrete classes) & Regression (continuous values)",
+          "Evaluated with metrics like MSE, RMSE, Accuracy, F1-Score, and ROC-AUC",
+          "Crucial BCA exam difference: Unlike unsupervised, errors can be explicitly quantified and minimized"
+        ],
+        formula: "y = f(X) + ε   (where ε represents irreducible noise)",
+        pros: ["Clear optimization goal", "High accuracy when quality labeled data exists", "Direct evaluation metrics"],
+        cons: ["Data labeling is expensive & time-consuming", "Prone to overfitting on noisy labels"],
+        applications: ["Spam email filtering", "Medical diagnosis", "Stock price prediction"]
+      },
+      {
+        id: "unsupervised",
+        name: "Unsupervised Learning",
+        category: "unsupervised",
+        categoryLabel: "Unsupervised",
+        badgeClass: "badge-unsup",
+        tagline: "Discovering hidden patterns and structures in unlabeled data",
+        definition: "Machine learning paradigm that analyzes unlabelled datasets without human intervention. The goal is to uncover innate grouping, geometric density, or latent representations.",
+        keyPoints: [
+          "Works with data containing only features (X) and no target labels (y)",
+          "Main tasks: Clustering (grouping), Association Rule Mining, & Dimensionality Reduction",
+          "Evaluation is subjective: Silhouette score, Davies-Bouldin index, or Inertia",
+          "Common algorithms: K-Means, Hierarchical Clustering, PCA, Apriori"
+        ],
+        formula: "Input: {x₁, x₂, ..., xₙ} -> Discover function P(X) or cluster assignments C",
+        pros: ["No manual labeling bottleneck", "Discovers unexpected patterns & exploratory insights", "Handles raw real-world data easily"],
+        cons: ["Difficult to benchmark and validate performance", "Computationally intensive for massive datasets"],
+        applications: ["Customer market segmentation", "Anomaly/fraud detection", "Recommendation engines"]
+      },
+      {
+        id: "linear_regression",
+        name: "Linear Regression",
+        category: "supervised",
+        categoryLabel: "Supervised",
+        badgeClass: "badge-sup",
+        tagline: "Modeling linear relationship between independent & dependent variables",
+        definition: "A fundamental supervised regression algorithm that models a linear relationship between a scalar response variable y and one or more explanatory variables X.",
+        keyPoints: [
+          "Simple Linear: y = mx + c; Multiple Linear: y = β₀ + β₁x₁ + ... + βₙxₙ + ε",
+          "Optimization technique: Ordinary Least Squares (OLS) minimizes Sum of Squared Errors (SSE)",
+          "Assumptions for exams: Linearity, Homoscedasticity, Independence of errors, Normality of residuals",
+          "Regularization variants: Ridge (L2 penalty) and Lasso (L1 penalty for feature selection)"
+        ],
+        formula: "Loss (MSE) = (1/n) * Σ (yᵢ - (β₀ + β₁xᵢ))²",
+        pros: ["Simple to implement and interpret", "Extremely fast training and inference", "Provides feature coefficient weights"],
+        cons: ["Assumes linear relationship (fails on complex curves)", "Sensitive to outliers and multicollinearity"],
+        applications: ["Real-estate house price forecasting", "Sales projection", "Risk assessment in finance"]
+      },
+      {
+        id: "knn",
+        name: "K-Nearest Neighbors (KNN)",
+        category: "supervised",
+        categoryLabel: "Supervised",
+        badgeClass: "badge-sup",
+        tagline: "Non-parametric instance-based 'lazy' learning algorithm",
+        definition: "A simple, non-parametric, instance-based supervised algorithm that classifies or regresses a new query instance based on the majority vote or average of its k nearest neighbors in feature space.",
+        keyPoints: [
+          "Classified as 'Lazy Learner': No training phase; computation happens during inference/query",
+          "Distance metrics: Euclidean (√Σ(pᵢ - qᵢ)²), Manhattan (|pᵢ - qᵢ|), or Minkowski",
+          "Choice of 'k': Small k leads to overfitting (sensitive to noise); large k causes underfitting",
+          "Feature scaling (Standardization/MinMax) is strictly required before distance computation"
+        ],
+        formula: "Euclidean Distance: d(p, q) = √[ Σᵢ₌₁ⁿ (qᵢ - pᵢ)² ]",
+        pros: ["No explicit assumptions about data distribution", "Simple to understand and implement", "Naturally supports multi-class classification"],
+        cons: ["Slow prediction time on large datasets O(N*D)", "Memory intensive", "Suffers from the curse of dimensionality"],
+        applications: ["Handwriting optical recognition", "Basic recommendation systems", "Credit score tier classification"]
+      },
+      {
+        id: "decision_trees",
+        name: "Decision Trees",
+        category: "supervised",
+        categoryLabel: "Supervised",
+        badgeClass: "badge-sup",
+        tagline: "Hierarchical flowchart structure partitioning feature space",
+        definition: "A supervised learning model representing decisions and their consequences as an inverted tree consisting of Root, Decision (Internal), and Leaf nodes.",
+        keyPoints: [
+          "Split metrics: Entropy & Information Gain (ID3), Gini Impurity (CART), Gain Ratio (C4.5)",
+          "Entropy: H(S) = - Σ pᵢ log₂(pᵢ) ; Measures randomness/disorder in a node",
+          "Gini Impurity = 1 - Σ (pᵢ)² ; Computationally faster than entropy",
+          "Pruning: Pre-pruning (early stopping) and Post-pruning to combat notorious overfitting"
+        ],
+        formula: "Information Gain = Entropy(Parent) - Σ [ (|Sᵥ| / |S|) * Entropy(Sᵥ) ]",
+        pros: ["Highly interpretable ('white box' model)", "Handles both numerical and categorical inputs", "No normalization required"],
+        cons: ["High variance: Small change in data drastically alters tree structure", "Heavily prone to overfitting if unpruned"],
+        applications: ["Loan default prediction", "Medical diagnosis decision pathways", "Customer churn analysis"]
+      },
+      {
+        id: "svm",
+        name: "Support Vector Machines (SVM)",
+        category: "supervised",
+        categoryLabel: "Supervised",
+        badgeClass: "badge-sup",
+        tagline: "Finding optimal maximum-margin hyperplane separating classes",
+        definition: "A robust supervised learning algorithm that constructs an optimal decision boundary (hyperplane) that maximizes the geometric margin between data classes in high-dimensional space.",
+        keyPoints: [
+          "Support Vectors: The critical data points closest to the hyperplane that dictate its orientation",
+          "Margin: The distance between the hyperplane and the closest support vectors; SVM maximizes this (2/||w||)",
+          "Kernel Trick: Transforms non-linearly separable data into higher dimensional space without explicit mapping",
+          "Common Kernels: Linear, Polynomial, Radial Basis Function (RBF/Gaussian), Sigmoid"
+        ],
+        formula: "Maximize Margin: 2 / ||w||  subject to  yᵢ(w · xᵢ + b) ≥ 1",
+        pros: ["Effective in high-dimensional spaces (even when features > samples)", "Memory efficient as it only relies on support vectors", "Versatile via kernel functions"],
+        cons: ["Computationally heavy on massive datasets O(N² to N³)", "Sensitive to noisy overlapping points", "No native probabilistic output"],
+        applications: ["Bioinformatics gene classification", "Face detection", "Text categorization and sentiment analysis"]
+      },
+      {
+        id: "kmeans",
+        name: "K-Means Clustering",
+        category: "unsupervised",
+        categoryLabel: "Unsupervised",
+        badgeClass: "badge-unsup",
+        tagline: "Centroid-based partition clustering minimizing intra-cluster variance",
+        definition: "An iterative, partition-based unsupervised clustering algorithm that groups n observations into k distinct non-overlapping clusters, with each point assigned to the nearest centroid.",
+        keyPoints: [
+          "Iterative 4-step process: (1) Choose k centroids randomly, (2) Assign points to closest centroid, (3) Recompute centroids as mean of assigned points, (4) Repeat until convergence",
+          "Determining optimal 'k': The Elbow Method (plotting WCSS/Inertia vs k) or Silhouette analysis",
+          "Objective: Minimize Within-Cluster Sum of Squares (WCSS)",
+          "Sensitive to initial random centroid placement (remedied by K-Means++)"
+        ],
+        formula: "WCSS = Σⱼ₌₁ᵏ Σᵢ∈Cⱼ || xᵢ - μⱼ ||²   (where μⱼ is centroid of cluster j)",
+        pros: ["Guaranteed convergence", "Computationally fast O(t * k * n * d)", "Scales easily to large datasets"],
+        cons: ["Requires pre-specifying value of k", "Struggles with non-spherical clusters and varying densities", "Heavily affected by outliers"],
+        applications: ["Customer segmentation in marketing", "Document clustering", "Image compression / color quantization"]
+      },
+      {
+        id: "pca",
+        name: "Principal Component Analysis (PCA)",
+        category: "dim-reduction",
+        categoryLabel: "Dimensionality Reduction",
+        badgeClass: "badge-dim",
+        tagline: "Orthogonal linear transformation maximizing variance on lower dimensions",
+        definition: "An unsupervised statistical technique used for dimensionality reduction. It transforms high-dimensional correlated features into a smaller set of uncorrelated variables called Principal Components (PCs).",
+        keyPoints: [
+          "Preserves maximum data variance while discarding redundant dimensions",
+          "Mathematical steps: (1) Standardize features (mean=0, variance=1), (2) Compute Covariance Matrix, (3) Calculate Eigenvalues and Eigenvectors, (4) Project data onto top eigenvectors",
+          "PC1 captures the highest variance; PC2 is orthogonal (perpendicular) to PC1 and captures second highest variance",
+          "Essential BCA exam note: Overcomes the 'Curse of Dimensionality' and speeds up model training"
+        ],
+        formula: "Covariance Matrix Σ = (1 / n) * XᵀX ;  Eigen equation: Σv = λv",
+        pros: ["Eliminates multicollinearity between features", "Dramatically compresses dataset size", "Enables 2D/3D visualization of high-dimensional datasets"],
+        cons: ["Principal components lose intuitive interpretability", "Assumes linear relationships between features", "Information loss occurs when components are dropped"],
+        applications: ["Data compression", "High-dimensional data visualization", "Image facial recognition (Eigenfaces)"]
+      }
+    ];
+
+    /* =========================================================================
+       2. DATA STRUCTURES: 10 MULTIPLE CHOICE QUIZ QUESTIONS
+       ========================================================================= */
+    const QUIZ_QUESTIONS = [
+      {
+        topic: "Supervised Learning",
+        question: "In Machine Learning, what is the primary factor that distinguishes Supervised Learning from Unsupervised Learning?",
+        options: [
+          "Supervised learning requires ground-truth target labels for training",
+          "Supervised learning only works with numerical continuous data",
+          "Unsupervised learning requires specialized GPU hardware",
+          "Supervised learning does not use any loss or cost function"
+        ],
+        correct: 0,
+        explanation: "Supervised learning relies on explicit input-output pairs (features along with corresponding labels) to train models, unlike unsupervised learning which detects patterns in unlabelled data."
+      },
+      {
+        topic: "Linear Regression",
+        question: "Which mathematical criterion does Ordinary Least Squares (OLS) minimize to derive the best-fit line in Linear Regression?",
+        options: [
+          "Sum of Absolute Residuals",
+          "Sum of Squared Errors (Residuals)",
+          "The maximum distance to the centroid",
+          "The number of misclassified categorical points"
+        ],
+        correct: 1,
+        explanation: "OLS minimizes the sum of squared vertical differences (residuals) between observed target values and values predicted by the linear regression line."
+      },
+      {
+        topic: "K-Nearest Neighbors",
+        question: "Why is the K-Nearest Neighbors (KNN) algorithm officially characterized as a 'Lazy Learner' in BCA exams?",
+        options: [
+          "It takes days to execute on simple datasets",
+          "It does not learn a discriminative function during training; computation occurs during query time",
+          "It skips computing Euclidean distances when calculating weights",
+          "It never achieves more than 50% classification accuracy"
+        ],
+        correct: 1,
+        explanation: "KNN is an instance-based lazy learner because it simply memorizes the training instances and defers all computations until a prediction query is requested."
+      },
+      {
+        topic: "Decision Trees",
+        question: "In the ID3 algorithm for Decision Trees, which formula correctly expresses the Information Gain of a split attribute A on dataset S?",
+        options: [
+          "Gain(S, A) = Entropy(S) - Σ [ (|Sᵥ| / |S|) * Entropy(Sᵥ) ]",
+          "Gain(S, A) = Gini(S) + Gini(A)",
+          "Gain(S, A) = 1 - Variance(S)",
+          "Gain(S, A) = Euclidean_Distance(S, A)"
+        ],
+        correct: 0,
+        explanation: "Information Gain equals the parent node's Entropy minus the weighted sum of child node Entropies after partitioning on attribute A."
+      },
+      {
+        topic: "Support Vector Machines",
+        question: "What are 'Support Vectors' in a Support Vector Machine (SVM)?",
+        options: [
+          "The average coordinates of all training samples combined",
+          "The data points that lie furthest away from the hyperplane",
+          "The critical boundary data points closest to the decision hyperplane that define the margin",
+          "The software libraries used to run quadratic programming solvers"
+        ],
+        correct: 2,
+        explanation: "Support vectors are the critical data points residing along the margin boundaries closest to the separating hyperplane; removing them changes the position of the hyperplane."
+      },
+      {
+        topic: "SVM Kernel Trick",
+        question: "What is the primary objective of using the 'Kernel Trick' in Support Vector Machines?",
+        options: [
+          "To speed up database indexing of text files",
+          "To map non-linearly separable data into a higher-dimensional space where it becomes linearly separable",
+          "To reduce the number of features down to exactly two dimensions",
+          "To force SVM to perform unsupervised clustering"
+        ],
+        correct: 1,
+        explanation: "The Kernel Trick computes inner products in high-dimensional Hilbert space, enabling linear separation of data that is non-linear in original feature space without explicitly computing coordinates."
+      },
+      {
+        topic: "K-Means Clustering",
+        question: "Which heuristic method is commonly plotted (WCSS vs. Number of Clusters) to identify the optimal value of 'k' in K-Means?",
+        options: [
+          "The Scree Test",
+          "The Elbow Method",
+          "Gradient Descent curve",
+          "Confusion Matrix ROC plot"
+        ],
+        correct: 1,
+        explanation: "The Elbow Method plots the Within-Cluster Sum of Squares (WCSS/inertia) against varying values of k; the 'elbow' point where the rate of decrease sharpens indicates optimal k."
+      },
+      {
+        topic: "Principal Component Analysis",
+        question: "In Principal Component Analysis (PCA), what geometric relationship always exists between the first principal component (PC1) and the second (PC2)?",
+        options: [
+          "They are strictly parallel to each other",
+          "They are orthogonal (perpendicular) to each other and linearly uncorrelated",
+          "They share the exact same eigenvalue",
+          "They always cross the origin at exactly 45 degrees"
+        ],
+        correct: 1,
+        explanation: "By mathematical construction, all principal components in PCA are strictly orthogonal (at a 90° angle) to each other, ensuring that PC2 captures remaining variance uncorrelated with PC1."
+      },
+      {
+        topic: "Unsupervised Learning",
+        question: "Which of the following is an Unsupervised Learning task frequently tested in university examinations?",
+        options: [
+          "Predicting whether a bank loan will default (Yes/No)",
+          "Customer market basket segmentation without pre-assigned customer groups",
+          "Forecast tomorrow's temperature in Celsius",
+          "Detecting handwritten digits with known 0-9 labels"
+        ],
+        correct: 1,
+        explanation: "Customer segmentation without existing demographic or target groups is an unsupervised clustering task, as opposed to loan classification or temperature regression."
+      },
+      {
+        topic: "Model Evaluation & Overfitting",
+        question: "What does 'Pruning' achieve when training a Decision Tree model?",
+        options: [
+          "It adds more branches to make the tree deeper and memorize outliers",
+          "It simplifies the tree by removing branches that provide little predictive power, reducing overfitting",
+          "It converts the Decision Tree into a linear regression model",
+          "It normalizes continuous features between 0 and 1"
+        ],
+        correct: 1,
+        explanation: "Pruning cuts back over-specialized leaf nodes and branches that capture noise, improving model generalization and preventing severe overfitting on test data."
+      }
+    ];
+
+    /* =========================================================================
+       3. STATE MANAGEMENT & LOCAL STORAGE
+       ========================================================================= */
+    const STORAGE_KEY_CHECKLIST = "bca_ml_checklist_completed";
+    const STORAGE_KEY_QUIZ = "bca_ml_quiz_state";
+
+    let completedTopicIds = new Set();
+    let currentFilter = "all";
+    let activeModalTopicId = null;
+
+    // Flashcard State
+    let currentFlashcardIndex = 0;
+    let isCardFlipped = false;
+
+    // Quiz State
+    let currentQuizIndex = 0;
+    let quizUserAnswers = {}; // { questionIndex: selectedOptionIndex }
+
+    // Timer State
+    let timerDurationSeconds = 25 * 60; // 25 mins default
+    let timerRemainingSeconds = 25 * 60;
+    let timerInterval = null;
+    let isTimerRunning = false;
+
+    /* Initialize from LocalStorage */
+    function loadSavedState() {
+      try {
+        const savedCompleted = localStorage.getItem(STORAGE_KEY_CHECKLIST);
+        if (savedCompleted) {
+          const parsed = JSON.parse(savedCompleted);
+          completedTopicIds = new Set(parsed);
+        }
+
+        const savedQuiz = localStorage.getItem(STORAGE_KEY_QUIZ);
+        if (savedQuiz) {
+          quizUserAnswers = JSON.parse(savedQuiz);
+        }
+      } catch (e) {
+        console.warn("Storage access failed:", e);
+      }
+    }
+
+    function saveChecklistState() {
+      try {
+        localStorage.setItem(STORAGE_KEY_CHECKLIST, JSON.stringify(Array.from(completedTopicIds)));
+      } catch (e) {
+        console.warn("Saving checklist failed", e);
+      }
+    }
+
+    function saveQuizState() {
+      try {
+        localStorage.setItem(STORAGE_KEY_QUIZ, JSON.stringify(quizUserAnswers));
+      } catch (e) {
+        console.warn("Saving quiz failed", e);
+      }
+    }
+
+    /* =========================================================================
+       4. STATS & PROGRESS CALCULATION (Features 1 & 7)
+       ========================================================================= */
+    function updateProgressStats() {
+      const total = ML_TOPICS.length;
+      const completed = completedTopicIds.size;
+      const remaining = Math.max(0, total - completed);
+      const percentage = Math.round((completed / total) * 100);
+
+      // DOM Updates
+      document.getElementById("stat-total").textContent = total;
+      document.getElementById("stat-completed").textContent = completed;
+      document.getElementById("stat-remaining").textContent = remaining;
+      document.getElementById("stat-percent").textContent = percentage + "%";
+      document.getElementById("progress-percentage-text").textContent = percentage + "% Complete (" + completed + "/" + total + " Topics)";
+
+      const fillBar = document.getElementById("overall-progress-fill");
+      fillBar.style.width = percentage + "%";
+      fillBar.parentElement.setAttribute("aria-valuenow", percentage);
+    }
+
+    /* =========================================================================
+       5. TOPIC CHECKLIST & FILTER RENDERING (Features 2, 6, 9)
+       ========================================================================= */
+    function renderTopicList() {
+      const container = document.getElementById("topic-list-container");
+      container.innerHTML = "";
+
+      const filtered = ML_TOPICS.filter(t => {
+        if (currentFilter === "all") return true;
+        return t.category === currentFilter;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding: 2rem; color: var(--text-dim);">No topics match the selected filter.</div>`;
+        return;
+      }
+
+      filtered.forEach(topic => {
+        const isCompleted = completedTopicIds.has(topic.id);
+        const card = document.createElement("div");
+        card.className = `topic-card ${isCompleted ? 'completed' : ''}`;
+        card.id = `card-${topic.id}`;
+
+        card.innerHTML = `
+          <div class="topic-card-left" onclick="toggleTopicCompletion('${topic.id}', event)">
+            <div class="custom-checkbox" aria-label="Toggle ${topic.name}">
+              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <div class="topic-info">
+              <h3>${topic.name}</h3>
+              <div>
+                <span class="topic-badge ${topic.badgeClass}">${topic.categoryLabel}</span>
+                <span style="font-size: 0.76rem; color: var(--text-dim);">${topic.tagline}</span>
+              </div>
+            </div>
+          </div>
+          <div class="topic-card-actions">
+            <button class="btn-action-icon" onclick="openTopicModal('${topic.id}')" title="Read detailed revision notes">
+              📖 Notes
+            </button>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    function toggleTopicCompletion(topicId, event) {
+      if (event) event.stopPropagation();
+
+      if (completedTopicIds.has(topicId)) {
+        completedTopicIds.delete(topicId);
+        showToast("Marked '" + getTopicName(topicId) + "' as incomplete", "⏳");
+      } else {
+        completedTopicIds.add(topicId);
+        showToast("Completed: '" + getTopicName(topicId) + "'!", "✅");
+      }
+
+      saveChecklistState();
+      renderTopicList();
+      updateProgressStats();
+    }
+
+    function getTopicName(id) {
+      const found = ML_TOPICS.find(t => t.id === id);
+      return found ? found.name : id;
+    }
+
+    /* Filter Selector (Feature 6) */
+    function setupFilters() {
+      const filterBtns = document.querySelectorAll(".filter-btn");
+      filterBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+          filterBtns.forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          currentFilter = btn.getAttribute("data-filter");
+          renderTopicList();
+        });
+      });
+    }
+
+    /* =========================================================================
+       6. REVISION NOTES MODAL (Feature 9)
+       ========================================================================= */
+    function openTopicModal(topicId) {
+      const topic = ML_TOPICS.find(t => t.id === topicId);
+      if (!topic) return;
+
+      activeModalTopicId = topicId;
+      document.getElementById("modalTopicTitle").textContent = topic.name;
+
+      const modalBody = document.getElementById("modalTopicBody");
+      const isCompleted = completedTopicIds.has(topic.id);
+
+      modalBody.innerHTML = `
+        <div style="margin-bottom: 0.75rem;">
+          <span class="topic-badge ${topic.badgeClass}">${topic.categoryLabel}</span>
+          <span style="color: var(--text-muted); font-size: 0.82rem; margin-left: 8px;">${topic.tagline}</span>
+        </div>
+
+        <div class="modal-section-title">Academic Definition (BCA Core)</div>
+        <p>${topic.definition}</p>
+
+        <div class="modal-section-title">Key Exam Takeaways</div>
+        <ul style="margin-left: 1.25rem; font-size: 0.88rem; line-height: 1.5;">
+          ${topic.keyPoints.map(pt => `<li style="margin-bottom: 4px;">${pt}</li>`).join("")}
+        </ul>
+
+        <div class="modal-section-title">Mathematical Formula / Representation</div>
+        <div class="modal-formula-box">${topic.formula}</div>
+
+        <div class="modal-pros-cons">
+          <div class="pros-box">
+            <h6>Advantages / Strengths</h6>
+            <ul style="margin-left: 1.1rem; font-size: 0.8rem;">
+              ${topic.pros.map(p => `<li>${p}</li>`).join("")}
+            </ul>
+          </div>
+          <div class="cons-box">
+            <h6>Limitations / Weaknesses</h6>
+            <ul style="margin-left: 1.1rem; font-size: 0.8rem;">
+              ${topic.cons.map(c => `<li>${c}</li>`).join("")}
+            </ul>
+          </div>
+        </div>
+
+        <div class="modal-section-title">Practical Applications</div>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">
+          ${topic.applications.join(" &bull; ")}
+        </p>
+      `;
+
+      const toggleBtn = document.getElementById("modalToggleCompleteBtn");
+      toggleBtn.textContent = isCompleted ? "Mark as Incomplete" : "Mark as Completed";
+
+      document.getElementById("notesModal").style.display = "flex";
+    }
+
+    function closeModal() {
+      document.getElementById("notesModal").style.display = "none";
+      activeModalTopicId = null;
+    }
+
+    function closeModalOnBackdrop(e) {
+      if (e.target.id === "notesModal") {
+        closeModal();
+      }
+    }
+
+    function toggleCurrentModalTopic() {
+      if (!activeModalTopicId) return;
+      toggleTopicCompletion(activeModalTopicId);
+      const isCompleted = completedTopicIds.has(activeModalTopicId);
+      document.getElementById("modalToggleCompleteBtn").textContent = isCompleted ? "Mark as Incomplete" : "Mark as Completed";
+    }
+
+    /* =========================================================================
+       7. STUDY TIMER (Feature 3)
+       ========================================================================= */
+    function setTimerDuration(minutes) {
+      if (isTimerRunning) {
+        clearInterval(timerInterval);
+        isTimerRunning = false;
+        document.getElementById("btn-timer-toggle").textContent = "▶ Start";
+        document.getElementById("btn-timer-toggle").classList.remove("btn-pause");
+        document.getElementById("btn-timer-toggle").classList.add("btn-start");
+      }
+
+      timerDurationSeconds = minutes * 60;
+      timerRemainingSeconds = timerDurationSeconds;
+      updateTimerDisplay();
+
+      // Update preset buttons active state
+      document.querySelectorAll(".preset-btn").forEach(btn => {
+        if (btn.textContent.includes(minutes + " Min")) {
+          btn.classList.add("active");
+        } else {
+          btn.classList.remove("active");
+        }
+      });
+
+      document.getElementById("timer-status-text").textContent = minutes + "-min sprint ready";
+      document.getElementById("timer-mode-label").textContent = minutes === 25 ? "Pomodoro" : "Sprint";
+    }
+
+    function updateTimerDisplay() {
+      const minutes = Math.floor(timerRemainingSeconds / 60);
+      const seconds = timerRemainingSeconds % 60;
+      const displayStr = 
+        String(minutes).padStart(2, '0') + ":" + 
+        String(seconds).padStart(2, '0');
+      document.getElementById("timer-display").textContent = displayStr;
+    }
+
+    function toggleTimer() {
+      const toggleBtn = document.getElementById("btn-timer-toggle");
+
+      if (isTimerRunning) {
+        // Pause
+        clearInterval(timerInterval);
+        isTimerRunning = false;
+        toggleBtn.textContent = "▶ Resume";
+        toggleBtn.classList.remove("btn-pause");
+        toggleBtn.classList.add("btn-start");
+        document.getElementById("timer-status-text").textContent = "Timer Paused";
+      } else {
+        // Start
+        if (timerRemainingSeconds <= 0) {
+          timerRemainingSeconds = timerDurationSeconds;
+        }
+
+        isTimerRunning = true;
+        toggleBtn.textContent = "⏸ Pause";
+        toggleBtn.classList.remove("btn-start");
+        toggleBtn.classList.add("btn-pause");
+        document.getElementById("timer-status-text").textContent = "Studying ML Concepts...";
+
+        timerInterval = setInterval(() => {
+          timerRemainingSeconds--;
+          updateTimerDisplay();
+
+          if (timerRemainingSeconds <= 0) {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            toggleBtn.textContent = "▶ Start";
+            toggleBtn.classList.remove("btn-pause");
+            toggleBtn.classList.add("btn-start");
+            document.getElementById("timer-status-text").textContent = "Session Finished! Take a break.";
+            showToast("⏰ Study interval complete! Stand up, stretch, and relax.", "🔔");
+          }
+        }, 1000);
+      }
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      isTimerRunning = false;
+      timerRemainingSeconds = timerDurationSeconds;
+      updateTimerDisplay();
+
+      const toggleBtn = document.getElementById("btn-timer-toggle");
+      toggleBtn.textContent = "▶ Start";
+      toggleBtn.classList.remove("btn-pause");
+      toggleBtn.classList.add("btn-start");
+      document.getElementById("timer-status-text").textContent = "Timer reset";
+    }
+
+    /* =========================================================================
+       8. FLASHCARDS (Feature 4)
+       ========================================================================= */
+    function renderFlashcard() {
+      const card = ML_TOPICS[currentFlashcardIndex];
+      const fcElement = document.getElementById("flashcard-element");
+
+      // Reset flip before swapping content
+      if (isCardFlipped) {
+        fcElement.classList.remove("flipped");
+        isCardFlipped = false;
+      }
+
+      // Front
+      document.getElementById("fc-category-badge").textContent = card.categoryLabel.toUpperCase();
+      document.getElementById("fc-front-title").textContent = card.name;
+      document.getElementById("fc-front-sub").textContent = card.tagline;
+
+      // Back
+      document.getElementById("fc-back-title").textContent = card.name + " (Exam Definition)";
+      document.getElementById("fc-back-definition").textContent = card.definition;
+      
+      const bulletsList = document.getElementById("fc-back-bulletpoints");
+      bulletsList.innerHTML = card.keyPoints.slice(0, 3).map(pt => `<li>${pt}</li>`).join("");
+
+      // Counter & Nav State
+      document.getElementById("fc-counter").textContent = `Card ${currentFlashcardIndex + 1} / ${ML_TOPICS.length}`;
+      document.getElementById("btn-fc-prev").disabled = (currentFlashcardIndex === 0);
+      document.getElementById("btn-fc-next").disabled = (currentFlashcardIndex === ML_TOPICS.length - 1);
+    }
+
+    function flipFlashcard() {
+      const fcElement = document.getElementById("flashcard-element");
+      isCardFlipped = !isCardFlipped;
+      if (isCardFlipped) {
+        fcElement.classList.add("flipped");
+      } else {
+        fcElement.classList.remove("flipped");
+      }
+    }
+
+    function prevFlashcard() {
+      if (currentFlashcardIndex > 0) {
+        currentFlashcardIndex--;
+        renderFlashcard();
+      }
+    }
+
+    function nextFlashcard() {
+      if (currentFlashcardIndex < ML_TOPICS.length - 1) {
+        currentFlashcardIndex++;
+        renderFlashcard();
+      }
+    }
+
+    /* =========================================================================
+       9. QUIZ SYSTEM WITH 10 QUESTIONS (Feature 5)
+       ========================================================================= */
+    function renderQuizQuestion() {
+      const total = QUIZ_QUESTIONS.length;
+      const q = QUIZ_QUESTIONS[currentQuizIndex];
+
+      document.getElementById("quiz-progress-text").textContent = `Question ${currentQuizIndex + 1} of ${total}`;
+      document.getElementById("quiz-topic-indicator").textContent = `TOPIC: ${q.topic.toUpperCase()}`;
+      document.getElementById("quiz-question-text").textContent = q.question;
+
+      const optionsList = document.getElementById("quiz-options-list");
+      optionsList.innerHTML = "";
+
+      const savedAnswer = quizUserAnswers[currentQuizIndex];
+      const hasAnswered = savedAnswer !== undefined;
+
+      const feedbackBox = document.getElementById("quiz-feedback-box");
+
+      if (hasAnswered) {
+        feedbackBox.style.display = "block";
+        const isCorrect = (savedAnswer === q.correct);
+        if (isCorrect) {
+          feedbackBox.className = "quiz-feedback-box feedback-correct";
+          feedbackBox.innerHTML = `<strong>✓ Correct!</strong> ${q.explanation}`;
+        } else {
+          feedbackBox.className = "quiz-feedback-box feedback-wrong";
+          feedbackBox.innerHTML = `<strong>✗ Incorrect.</strong> Correct answer is <em>"${q.options[q.correct]}"</em>.<br>${q.explanation}`;
+        }
+      } else {
+        feedbackBox.style.display = "none";
+      }
+
+      const letters = ["A", "B", "C", "D"];
+      q.options.forEach((optText, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "quiz-opt-btn";
+        if (hasAnswered) {
+          btn.classList.add("locked");
+          if (idx === q.correct) {
+            btn.classList.add("correct");
+          } else if (idx === savedAnswer) {
+            btn.classList.add("wrong");
+          }
+        }
+
+        btn.innerHTML = `
+          <span class="opt-letter">${letters[idx]}</span>
+          <span style="flex:1;">${optText}</span>
+        `;
+
+        if (!hasAnswered) {
+          btn.onclick = () => handleQuizOptionSelect(idx);
+        }
+
+        optionsList.appendChild(btn);
+      });
+
+      // Update Nav Buttons
+      const prevBtn = document.getElementById("btn-quiz-prev");
+      prevBtn.style.visibility = (currentQuizIndex > 0) ? "visible" : "hidden";
+
+      const nextBtn = document.getElementById("btn-quiz-next");
+      if (currentQuizIndex === total - 1) {
+        nextBtn.textContent = hasAnswered ? "View Quiz Summary 📊" : "Next Question →";
+      } else {
+        nextBtn.textContent = "Next Question →";
+      }
+
+      updateQuizScoreDisplay();
+    }
+
+    function handleQuizOptionSelect(optionIndex) {
+      quizUserAnswers[currentQuizIndex] = optionIndex;
+      saveQuizState();
+      renderQuizQuestion();
+    }
+
+    function prevQuestion() {
+      if (currentQuizIndex > 0) {
+        currentQuizIndex--;
+        renderQuizQuestion();
+      }
+    }
+
+    function nextQuestion() {
+      const total = QUIZ_QUESTIONS.length;
+      if (currentQuizIndex < total - 1) {
+        currentQuizIndex++;
+        renderQuizQuestion();
+      } else {
+        showQuizResults();
+      }
+    }
+
+    function updateQuizScoreDisplay() {
+      let score = 0;
+      Object.keys(quizUserAnswers).forEach(qIdx => {
+        const question = QUIZ_QUESTIONS[qIdx];
+        if (question && quizUserAnswers[qIdx] === question.correct) {
+          score++;
+        }
+      });
+      document.getElementById("quiz-live-score").textContent = `Score: ${score}/10`;
+      return score;
+    }
+
+    function showQuizResults() {
+      const score = updateQuizScoreDisplay();
+      const total = QUIZ_QUESTIONS.length;
+      document.getElementById("quiz-active-container").style.display = "none";
+
+      const banner = document.getElementById("quiz-results-banner");
+      banner.style.display = "block";
+
+      let feedbackTier = "";
+      if (score >= 9) {
+        feedbackTier = "Outstanding! You have strong mastery over BCA Machine Learning topics.";
+      } else if (score >= 7) {
+        feedbackTier = "Good job! A quick revision of weak topics will ensure top exam grades.";
+      } else if (score >= 5) {
+        feedbackTier = "Decent effort. Review the flashcards and topic notes for the missed questions.";
+      } else {
+        feedbackTier = "Needs work. Use the revision checklist and flashcards above to re-study core fundamentals.";
+      }
+
+      document.getElementById("quiz-final-score-statement").innerHTML = `
+        You scored <strong>${score} out of ${total}</strong> (${Math.round((score/total)*100)}%).<br>
+        <span style="display:inline-block; margin-top:8px; color:var(--accent);">${feedbackTier}</span>
+      `;
+    }
+
+    function restartQuiz() {
+      quizUserAnswers = {};
+      saveQuizState();
+      currentQuizIndex = 0;
+      document.getElementById("quiz-results-banner").style.display = "none";
+      document.getElementById("quiz-active-container").style.display = "block";
+      renderQuizQuestion();
+      showToast("Quiz has been reset. Good luck!", "🔄");
+    }
+
+    /* =========================================================================
+       10. RESET ALL PROGRESS (Feature 8)
+       ========================================================================= */
+    function resetStudySession() {
+      // Clear data
+      completedTopicIds.clear();
+      quizUserAnswers = {};
+      try {
+        localStorage.removeItem(STORAGE_KEY_CHECKLIST);
+        localStorage.removeItem(STORAGE_KEY_QUIZ);
+      } catch (e) {
+        console.warn(e);
+      }
+
+      // Reset components
+      currentFilter = "all";
+      document.querySelectorAll(".filter-btn").forEach(b => {
+        b.classList.toggle("active", b.getAttribute("data-filter") === "all");
+      });
+
+      renderTopicList();
+      updateProgressStats();
+
+      // Reset Quiz
+      currentQuizIndex = 0;
+      document.getElementById("quiz-results-banner").style.display = "none";
+      document.getElementById("quiz-active-container").style.display = "block";
+      renderQuizQuestion();
+
+      // Reset Flashcard
+      currentFlashcardIndex = 0;
+      renderFlashcard();
+
+      // Reset Timer
+      resetTimer();
+
+      showToast("Study session reset: Checklist & Quiz progress cleared.", "🧹");
+    }
+
+    /* =========================================================================
+       11. UTILITIES & HELPERS
+       ========================================================================= */
+    function showToast(message, icon = "ℹ️") {
+      const toast = document.getElementById("toastMessage");
+      document.getElementById("toastIcon").textContent = icon;
+      document.getElementById("toastText").textContent = message;
+
+      toast.classList.add("show");
+      setTimeout(() => {
+        toast.classList.remove("show");
+      }, 3200);
+    }
+
+    function scrollToSection(id) {
+      const elem = document.getElementById(id);
+      if (elem) {
+        elem.scrollIntoView({ behavior: "smooth" });
+      }
+      // Close mobile sidebar if open
+      document.getElementById("sidebar").classList.remove("open");
+    }
+
+    function quickJumpToQuiz() {
+      scrollToSection("section-quiz");
+    }
+
+    // Mobile sidebar toggle
+    document.getElementById("menuToggle").addEventListener("click", () => {
+      document.getElementById("sidebar").classList.toggle("open");
+    });
+
+    // Reset button in sidebar
+    document.getElementById("btn-reset-all").addEventListener("click", () => {
+      resetStudySession();
+    });
+
+    // Keyboard navigation for flashcards
+    window.addEventListener("keydown", (e) => {
+      if (document.getElementById("notesModal").style.display === "flex") {
+        if (e.key === "Escape") closeModal();
+        return;
+      }
+      if (e.key === "ArrowLeft") {
+        prevFlashcard();
+      } else if (e.key === "ArrowRight") {
+        nextFlashcard();
+      } else if (e.key === " " && document.activeElement.tagName !== "BUTTON") {
+        // Space to flip
+        flipFlashcard();
+        e.preventDefault();
+      }
+    });
+
+    /* =========================================================================
+       12. INITIAL APPLICATION BOOTSTRAP
+       ========================================================================= */
+    window.onload = function() {
+      loadSavedState();
+      setupFilters();
+      renderTopicList();
+      updateProgressStats();
+      renderFlashcard();
+      renderQuizQuestion();
+      updateTimerDisplay();
+    };
+  </script>
+</body>
+</html>
