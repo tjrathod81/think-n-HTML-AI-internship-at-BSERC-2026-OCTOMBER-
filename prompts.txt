@@ -1,0 +1,304 @@
+3D Solar System :
+
+Create a complete interactive educational web application called "3D Solar System Explorer" using HTML, CSS, and vanilla JavaScript.
+WHO:
+The application is for students who want to explore the Solar System through an interactive 3D-style educational model.
+WHAT:
+Build an interactive model containing:
+- The Sun
+- Mercury
+- Venus
+- Earth
+- Mars
+- Jupiter
+- Saturn
+- Uranus
+- Neptune
+DO:
+Include at least 8 working interactive features:
+1. A visually appealing 3D-style Solar System model with planets orbiting the Sun.
+2. Allow users to rotate the model using mouse dragging or touch gestures.
+3. Include Zoom In and Zoom Out buttons.
+4. Allow users to select any planet by clicking on it.
+5. Display a planet information panel with its name, approximate diameter, distance from the Sun, and one interesting fact.
+6. Include a planet selection dropdown.
+7. Add Play and Pause buttons to control planetary animation.
+8. Add an orbit speed slider that changes the animation speed.
+9. Add a Reset View button to restore the original model position.
+RULES:
+- Use a single standalone HTML file.
+- Use HTML, CSS, and vanilla JavaScript only.
+- Do not use Three.js, external libraries, CDN links, or APIs.
+- Use CSS 3D transforms and JavaScript to create the interactive model.
+- Make the planets visually distinguishable by color, size, and orbital position.
+- Include a clear educational information panel.
+- Keep the interface responsive for laptop and mobile screens.
+- Ensure all controls work correctly.
+- Use realistic approximate planetary information.
+- Do not present the model's sizes and distances as physically accurate to scale.
+- Avoid unnecessary features or multiple HTML files.
+LIVE PREVIEW REQUIREMENT:
+Create this as an interactive HTML artifact with a live preview.
+I want to see the rendered website beside the code in the same interface.
+Do not just print the HTML code in the chat.
+Make the Solar System directly interactive in the preview.
+Users must be able to rotate the model, select planets, zoom, control the animation, and change orbit speed.
+The application must be directly runnable and testable.
+OUTPUT:
+Return the entire HTML document in one complete code block, starting with <!DOCTYPE html> and ending with </html>.   hyper realistic model 
+
+
+Laptop Decision Helper – Choose the Best Laptop for Your Budget:
+
+Create a complete, interactive web application called "Laptop Decision Helper – Choose the Best Laptop for Your Budget" using HTML, CSS, and vanilla JavaScript.
+WHO:
+The application is designed for students, beginners, and buyers who want to choose the best laptop according to their budget, needs, and preferences.
+WHAT:
+Build an interactive laptop comparison and decision-making tool that compares 5 sample laptops and recommends the most suitable laptop based on the user's preferences.
+Include these laptop categories:
+- Budget Student Laptop
+- Programming Laptop
+- Gaming Laptop
+- Business Laptop
+- Premium Performance Laptop
+DO:
+Include at least 8 fully functional interactive features:
+1. Budget Slider: Allow users to set their maximum laptop budget from ₹20,000 to ₹1,50,000.
+2. Purpose Selection: Let users select their primary purpose: Study, Programming, Gaming, Business, or Video Editing.
+3. Performance Slider: Allow users to adjust how important performance is.
+4. Battery Life Slider: Let users choose how much battery life matters.
+5. Portability Slider: Let users select their preference for lightweight laptops.
+6. Laptop Comparison Cards: Display laptop name, price, processor, RAM, storage, battery life, weight, and suitable usage.
+7. Live Ranking System: Automatically calculate suitability scores and reorder laptop cards when the user's preferences change.
+8. Recommended Laptop: Highlight the highest-ranked laptop and explain why it matches the user's preferences.
+9. Comparison Table: Display all laptop specifications and suitability scores in a clear comparison table.
+10. Reset Button: Restore all filters and preferences to their default values.
+SCORING LOGIC:
+Create a transparent scoring formula using:
+- Budget compatibility
+- Purpose compatibility
+- Performance
+- Battery life
+- Portability
+Use weighted scores based on the user's selected preferences.
+A laptop exceeding the user's maximum budget must not be recommended as the best choice.
+Update all scores and rankings instantly when the user changes a slider, budget, or purpose.
+DESIGN:
+- Create a modern, professional, minimal dashboard.
+- Use a white background with a dark navy and blue accent color palette.
+- Use laptop cards with rounded corners, subtle shadows, and clear typography.
+- Include a top navigation bar and a main recommendation section.
+- Make the interface responsive for laptop, tablet, and mobile screens.
+- Use Indian Rupees (₹) for all prices.
+RULES:
+- Use HTML, CSS, and vanilla JavaScript only.
+- Generate exactly one complete standalone HTML file.
+- Place all CSS inside a style tag and all JavaScript inside a script tag.
+- Do not use React, external libraries, APIs, CDN links, or backend services.
+- Use realistic illustrative sample laptop data.
+- Clearly state that the laptop prices and specifications are sample data and may differ from actual market listings.
+- Do not invent real-time prices or claim that the laptops are currently available for purchase.
+- Ensure every button, slider, filter, and interaction works correctly.
+- Use meaningful variable names and readable JavaScript.
+- Do not provide incomplete code or multiple files.
+LIVE PREVIEW REQUIREMENT:
+Create this as an interactive HTML artifact with a live preview.
+I want to see the rendered website beside the code in the same interface.
+Do not just print the HTML code in the chat.
+Make the laptop recommendation tool directly interactive in the preview.
+The budget slider, purpose selection, preference sliders, laptop rankings, recommendation, and comparison table must update immediately.
+The application must be directly runnable and testable.
+OUTPUT:
+Return the complete HTML document in one code block, starting with <!DOCTYPE html> and ending with </html>.
+
+
+
+
+
+Dam Break Inundation Modelling – 3D Simulation View :
+
+Create a complete, interactive, single-file HTML web application called "Dam Break Inundation Modelling – 3D Simulation View".
+IMPORTANT: I have attached a reference screenshot. Use the attached image as the exact visual reference. Recreate the interface as closely as possible. Do not create a different dashboard design or use a generic template.
+The goal is to reproduce the same visual appearance, layout, colors, terrain, floodwater, labels, charts, panels, and simulation controls shown in the reference screenshot, while making the interface interactive.
+WHO:
+This application is for students who want to explore dam failure and flood inundation through an interactive 3D-style visualization.
+WHAT:
+Recreate the screenshot with the following visual elements:
+1. MAIN 3D TERRAIN VIEW
+- A large aerial, perspective-style mountainous landscape.
+- A deep blue river flowing through a green valley.
+- A large concrete dam near the upper-central part of the landscape.
+- A reservoir behind the dam.
+- A river valley containing villages, roads, bridges, buildings, and agricultural fields.
+- A colorful floodwater overlay spreading downstream from the dam.
+- A realistic aerial visualization similar to a GIS flood simulation.
+1. TOP-LEFT HEADER
+2. Reproduce the dark translucent header panel shown in the screenshot.
+3. Include:
+- A cyan water-wave logo.
+- Title: "Dam Break Inundation Modelling"
+- Subtitle: "3D Simulation View"
+1. SCENARIO DETAILS PANEL
+2. Place a dark translucent panel below the header on the upper-left side.
+Display:
+- Dam Name: Example Dam
+- River Name: Example River
+- Breach Type: Complete Failure
+- Initial Storage: 450 MCM
+- Breach Width: 80 m
+- Simulation Time: 6 Hours
+1. DAM FAILURE MARKER
+2. Place a red marker at the dam breach point.
+3. Add a red label reading "Dam (Failure Point)" with a connecting line pointing to the dam.
+4. TERRAIN ELEVATION PANEL
+5. Place a 3D terrain elevation preview in the upper-right corner.
+6. Include:
+- A small 3D terrain model.
+- A colorful elevation surface.
+- A blue river channel.
+- Title: "Terrain Elevation (DEM)"
+- North direction indicator.
+- Elevation legend with values 0, 300, 600, 900, and 1200 meters.
+1. FLOOD DEPTH LEGEND
+2. Place a dark translucent panel on the right side below the terrain elevation panel.
+Use the exact following legend:
+- Red: > 10 m
+- Orange: 7–10 m
+- Orange-yellow: 5–7 m
+- Yellow: 3–5 m
+- Green: 1–3 m
+- Cyan: 0.5–1 m
+- Blue: 0.1–0.5 m
+- White: 0 (No Inundation)
+1. LOCATION MARKERS
+2. Place markers directly on the terrain with labels:
+- Village A
+- Town
+- Bridge
+- Highway
+- Agricultural Land
+Use the same marker style and approximate positions as the reference image.
+1. INUNDATION PROGRESS GRAPH
+2. Place a dark translucent chart panel in the bottom-left corner.
+Title: "Inundation Progress (Time Series)"
+Display:
+- X-axis: Time (Hours), ranging from 0 to 6.
+- Y-axis: Inundated Area (km²).
+- A cyan line graph showing inundated area increasing over time.
+- Grid lines and axis labels.
+- A small information box showing:
+- Time: 4 hr
+- Inundated Area: 32.6 km²
+1. KEY IMPACT STATISTICS
+2. Place a dark translucent statistics panel in the bottom-right corner.
+Title: "Key Impact Statistics (at 4 hr)"
+Display:
+- Inundated Area: 32.6 km²
+- Villages Affected: 12
+- Buildings Affected: 2,418
+- Roads Affected: 23 km
+- Max. Flood Depth: 8.4 m
+- Max. Flow Velocity: 5.7 m/s
+Use small icons next to each statistic.
+1. BOTTOM SIMULATION CONTROLS
+2. Place a dark translucent playback control bar at the bottom center.
+Include:
+- A blue circular Play button.
+- A horizontal timeline slider.
+- A current time display: 4:00:00 / 6:00:00.
+- A simulation duration of 6 hours.
+INTERACTIVITY:
+Make all of the following features functional:
+- Play and pause the simulation.
+- Move the timeline from 0 to 6 hours.
+- Update floodwater extent as simulation time changes.
+- Update the inundated area graph.
+- Update impact statistics based on simulation time.
+- Click location markers to display their names and impact information.
+- Zoom in and out of the terrain.
+- Rotate the terrain using mouse dragging and touch gestures.
+- Reset the simulation to the initial state.
+- Allow the user to change the simulation duration and breach width.
+VISUAL REQUIREMENTS:
+- Match the reference screenshot's overall composition as closely as possible.
+- Use a full-screen landscape visualization.
+- Use dark translucent glass-style panels with subtle borders.
+- Use white text and cyan highlights.
+- Use realistic green mountains, blue rivers, and colorful floodwater.
+- Keep the panels positioned over the terrain rather than arranging them in a normal dashboard grid.
+- Match the approximate size, spacing, alignment, and proportions of every panel.
+- Keep the simulation controls at the bottom center.
+- Make the layout responsive while preserving the original desktop composition.
+TECHNICAL REQUIREMENTS:
+- Use HTML, CSS, and vanilla JavaScript only.
+- Generate exactly one complete standalone HTML file.
+- Include all CSS in a style tag and all JavaScript in a script tag.
+- Do not use React, Three.js, external libraries, APIs, CDN links, or backend services.
+- Do not use external images or require internet access.
+- Use Canvas, SVG, CSS 3D transforms, and procedural JavaScript drawing to create the visualization.
+- Use a visually detailed terrain rather than a flat rectangle with a river.
+- Use illustrative simulation data.
+- Do not claim that the simulation produces scientifically accurate flood predictions.
+- Every control must work.
+- Do not provide multiple files or incomplete code.
+LIVE PREVIEW:
+Create this as an interactive HTML artifact with a live preview.
+Display the rendered website beside the code in the same interface.
+Do not return only a code block in the normal chat.
+The preview must show the actual running application.
+OUTPUT:
+Return the entire HTML document in one complete code block, beginning with <!DOCTYPE html> and ending with </html>.
+The screenshot is the primary design reference. Prioritize visual similarity over adding extra features or changing the layout.                                               VISUAL FIDELITY PRIORITY:
+If the result cannot achieve a realistic terrain using CSS alone, use a procedurally generated Canvas or SVG terrain visualization with detailed mountain textures, realistic river channels, roads, buildings, and floodwater overlays.
+Do not simplify the terrain into a plain green background with a blue river. The main terrain visualization must occupy most of the screen and visually resemble the attached aerial flood simulation screenshot.    
+
+Machine Learning Revision Dashboard:
+Create a complete, modern, interactive HTML web application called "Machine Learning Revision Dashboard" for a BCA student preparing for exams.
+WHO:
+The application is for students who want to revise Machine Learning concepts, practice questions, and track their study progress.
+WHAT:
+Build a complete revision dashboard covering:
+- Supervised Learning
+- Unsupervised Learning
+- Linear Regression
+- K-Nearest Neighbors (KNN)
+- Decision Trees
+- Support Vector Machines (SVM)
+- K-Means Clustering
+- Principal Component Analysis (PCA)
+DO:
+Include at least 8 fully working interactive features:
+1. A dashboard showing total topics, completed topics, remaining topics, and revision progress.
+2. A clickable topic checklist. Mark topics as completed or incomplete.
+3. A countdown study timer with Start, Pause, and Reset buttons.
+4. Interactive flashcards with a Flip button to reveal definitions and explanations.
+5. A scored multiple-choice quiz with at least 10 questions.
+6. A topic filter to display specific Machine Learning topics.
+7. A progress bar that updates when a topic is completed.
+8. A reset button to clear the current study session.
+RULES:
+- Use HTML, CSS, and vanilla JavaScript only.
+- Generate one complete, standalone HTML file.
+- Include all CSS and JavaScript inside the HTML file.
+- Do not use React, external libraries, APIs, or CDN links.
+- Use accurate Machine Learning definitions and simple explanations.
+- Every button, checkbox, filter, and quiz interaction must work.
+- Save study progress using localStorage.
+- Use a clean, professional dashboard design with a sidebar, cards, and responsive layout.
+- Ensure the interface works on both laptop and mobile screens.
+- Include realistic sample questions and educational content.
+- Do not provide incomplete code or multiple files.
+LIVE PREVIEW REQUIREMENT:
+Create this as an interactive HTML artifact with a live preview.
+I want to see the rendered website beside the code in the same interface.
+Do not just print the HTML code in the chat.
+Make every feature interactive in the preview, including the checklist, timer, flashcards, quiz, and filters.
+The application must be directly runnable and testable.
+OUTPUT:
+Return the entire HTML document in one complete code block, starting with <!DOCTYPE html> and ending with </html>.                          
+
+
+
+
+
+
